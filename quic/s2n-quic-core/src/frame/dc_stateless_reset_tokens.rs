@@ -4,7 +4,7 @@
 use crate::{frame::ExtensionTag, stateless_reset, varint::VarInt};
 use s2n_codec::{
     decoder_invariant,
-    zerocopy::{AsBytes as _, FromBytes as _},
+    zerocopy::{FromBytes as _, IntoBytes as _},
     DecoderError, Encoder, EncoderValue,
 };
 
