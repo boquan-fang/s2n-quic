@@ -33,7 +33,7 @@ macro_rules! dc_stateless_reset_tokens_tag {
 //# Stateless Reset Tokens: 1 or more 128-bit values that will be used
 //#     for a stateless reset of dc path secrets.
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, zerocopy::Immutable)]
 pub struct DcStatelessResetTokens<'a> {
     /// 1 or more 128-bit values
     stateless_reset_tokens: &'a [stateless_reset::Token],
@@ -112,7 +112,7 @@ impl<'a> ::s2n_codec::DecoderParameterizedValue<'a> for DcStatelessResetTokens<'
         _tag: Self::Parameter,
         buffer: ::s2n_codec::DecoderBuffer<'a>,
     ) -> ::s2n_codec::DecoderBufferResult<'a, Self> {
-        impl_decode_parameterized!(slice_from_prefix, buffer)
+        impl_decode_parameterized!(ref_from_prefix_with_elems, buffer)
     }
 }
 
@@ -124,7 +124,7 @@ impl<'a> ::s2n_codec::DecoderParameterizedValueMut<'a> for DcStatelessResetToken
         _tag: Self::Parameter,
         buffer: ::s2n_codec::DecoderBufferMut<'a>,
     ) -> ::s2n_codec::DecoderBufferMutResult<'a, Self> {
-        impl_decode_parameterized!(mut_slice_from_prefix, buffer)
+        impl_decode_parameterized!(mut_from_prefix_with_elems, buffer)
     }
 }
 

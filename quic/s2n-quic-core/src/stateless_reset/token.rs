@@ -9,6 +9,7 @@ use s2n_codec::{
     Encoder, EncoderValue,
 };
 use subtle::ConstantTimeEq;
+use zerocopy::{Immutable, KnownLayout};
 
 //= https://www.rfc-editor.org/rfc/rfc9000#section-10.3
 //# Stateless Reset {
@@ -22,7 +23,7 @@ pub const LEN: usize = 128 / 8;
 // a derived version, except it is constant-time. Therefore
 // Hash can still be derived.
 #[allow(clippy::derived_hash_with_manual_eq)]
-#[derive(Copy, Clone, Debug, Eq, Hash, FromBytes, IntoBytes, Unaligned)]
+#[derive(Copy, Clone, Debug, Eq, Hash, FromBytes, IntoBytes, Unaligned, KnownLayout, Immutable)]
 #[cfg_attr(
     any(test, feature = "generator"),
     derive(bolero_generator::TypeGenerator)
