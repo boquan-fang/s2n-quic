@@ -1,28 +1,55 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use super::*;
+use crate::provider::tls::default::{self as tls, security};
+
+const CLIENT_SEND_BUFFER_SIZE: u32 = 64000;
+
 #[test]
-#[cfg(feature = "s2n-quic-tls")]
 fn buffer_limit_test() {
-    use super::*;
-    use crate::provider::tls::s2n_tls;
     let model = Model::default();
+    let policy = &security::Policy::from_version("test_all").unwrap();
+
     test(model, |handle| {
-        // Client should be able to send a large ClientHello
-        let client_tls = s2n_tls::Client::builder()
-            .with_certificate(certificates::CERT_PEM)?
-            .build()?;
+        let server = tls::Server::from_loader({
+            let mut builder = tls::config::Config::builder();
+            builder
+                .enable_quic()?
+                .set_application_protocol_preference(["h3"])?
+                .set_security_policy(policy)?
+                .load_pem(
+                    certificates::CERT_PEM.as_bytes(),
+                    certificates::KEY_PEM.as_bytes(),
+                )?;
+
+            builder.build()?
+        });
 
         // Server and Client set up for TLS handshake
         let server = Server::builder()
             .with_io(handle.builder().build()?)?
-            .with_tls(SERVER_CERTS)?
+            .with_tls(server)?
             .with_event(tracing_events())?
             .with_random(Random::with_seed(456))?
             .start()?;
+
+        // Add lots of Config to enlarge the ClientHello
+        let client = tls::Client::from_loader({
+            let mut builder = tls::config::Config::builder();
+            builder
+                .enable_quic()?
+                .set_send_buffer_size(CLIENT_SEND_BUFFER_SIZE)?
+                .set_application_protocol_preference(["h3"])?
+                .set_security_policy(policy)?
+                .trust_pem(certificates::CERT_PEM.as_bytes())?;
+
+            builder.build()?
+        });
+
         let client = Client::builder()
             .with_io(handle.builder().build()?)?
-            .with_tls(client_tls)?
+            .with_tls(client)?
             .with_event(tracing_events())?
             .with_random(Random::with_seed(456))?
             .start()?;
