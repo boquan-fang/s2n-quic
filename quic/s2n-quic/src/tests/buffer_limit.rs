@@ -4,12 +4,12 @@
 use super::*;
 use crate::provider::tls::default::{self as tls, security};
 
-const CLIENT_SEND_BUFFER_SIZE: u32 = 64000;
+static MAX_NUM_FAKE_PROTOCOL: usize = 1600;
 
 #[test]
 fn buffer_limit_test() {
     let model = Model::default();
-    let policy = &security::Policy::from_version("test_all").unwrap();
+    let policy = &security::Policy::from_version("default_tls13").unwrap();
 
     test(model, |handle| {
         let server = tls::Server::from_loader({
@@ -34,13 +34,18 @@ fn buffer_limit_test() {
             .with_random(Random::with_seed(456))?
             .start()?;
 
-        // Add lots of Config to enlarge the ClientHello
+        // Fill application_layer_protocol_negotiation extension in ClientHello
+        let mut application_protocols: Vec<String> = Vec::new();
+        application_protocols.push("h3".to_string());
+        for _ in 0..MAX_NUM_FAKE_PROTOCOL {
+            application_protocols.push("fake-protocol".to_string());
+        }
+
         let client = tls::Client::from_loader({
             let mut builder = tls::config::Config::builder();
             builder
                 .enable_quic()?
-                .set_send_buffer_size(CLIENT_SEND_BUFFER_SIZE)?
-                .set_application_protocol_preference(["h3"])?
+                .set_application_protocol_preference(application_protocols)?
                 .set_security_policy(policy)?
                 .trust_pem(certificates::CERT_PEM.as_bytes())?;
 
@@ -56,7 +61,7 @@ fn buffer_limit_test() {
 
         let addr = start_server(server)?;
         // Assert that the TLS handshake by the client failed due to buffering
-        start_client(client, addr, Data::new(10000))?;
+        start_client(client, addr, Data::new(1000))?;
         Ok(addr)
     })
     .unwrap();
