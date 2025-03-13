@@ -185,6 +185,7 @@ macro_rules! zerocopy_network_integer {
             $crate::zerocopy::FromBytes,
             $crate::zerocopy::IntoBytes,
             $crate::zerocopy::Unaligned,
+            Immutable,
         )]
         #[repr(C)]
         pub struct $name(::zerocopy::byteorder::$name<NetworkEndian>);

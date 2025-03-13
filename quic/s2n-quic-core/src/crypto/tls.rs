@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 #[cfg(feature = "alloc")]
 pub use bytes::{Bytes, BytesMut};
 use core::fmt::Debug;
-use zerocopy::{FromBytes, FromZeros, IntoBytes, Unaligned};
+use zerocopy::{FromBytes, IntoBytes, Unaligned};
 
 mod error;
 pub use error::Error;
