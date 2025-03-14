@@ -4,7 +4,7 @@
 use super::tag::Common;
 use core::fmt;
 use s2n_quic_core::{packet::KeyPhase, probe};
-use zerocopy::{AsBytes, FromBytes, FromZeroes, Unaligned};
+use zerocopy::{FromBytes, Unaligned};
 
 pub mod decoder;
 pub mod encoder;
@@ -34,7 +34,7 @@ impl probe::Arg for PacketSpace {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, AsBytes, FromBytes, FromZeroes, Unaligned)]
+#[derive(Clone, Copy, PartialEq, Eq, FromBytes, Unaligned)]
 #[repr(C)]
 pub struct Tag(Common);
 
