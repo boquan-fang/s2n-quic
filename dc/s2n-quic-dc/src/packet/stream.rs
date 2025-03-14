@@ -3,7 +3,7 @@
 
 use super::tag::Common;
 use core::fmt;
-use s2n_quic_core::{packet::KeyPhase, probe};
+use s2n_quic_core::{packet::KeyPhase, probe, state::is};
 use zerocopy::{FromBytes, Unaligned};
 
 pub mod decoder;
@@ -22,6 +22,11 @@ pub use id::Id;
 pub enum PacketSpace {
     Stream,
     Recovery,
+}
+
+impl PacketSpace {
+    is!(is_stream, Stream);
+    is!(is_recovery, Recovery);
 }
 
 impl probe::Arg for PacketSpace {
@@ -50,7 +55,7 @@ impl Default for Tag {
 impl fmt::Debug for Tag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("stream::Tag")
-            .field("has_source_stream_port", &self.has_source_stream_port())
+            .field("has_source_queue_id", &self.has_source_queue_id())
             .field("has_control_data", &self.has_control_data())
             .field("packet_space", &self.packet_space())
             .field("has_final_offset", &self.has_final_offset())
@@ -61,7 +66,7 @@ impl fmt::Debug for Tag {
 }
 
 impl Tag {
-    pub const HAS_SOURCE_STREAM_PORT: u8 = 0b10_0000;
+    pub const HAS_SOURCE_QUEUE_ID: u8 = 0b10_0000;
     pub const IS_RECOVERY_PACKET: u8 = 0b01_0000;
     pub const HAS_CONTROL_DATA_MASK: u8 = 0b00_1000;
     pub const HAS_FINAL_OFFSET_MASK: u8 = 0b00_0100;
@@ -72,13 +77,13 @@ impl Tag {
     pub const MAX: u8 = 0b0011_1111;
 
     #[inline]
-    pub fn set_has_source_stream_port(&mut self, enabled: bool) {
-        self.0.set(Self::HAS_SOURCE_STREAM_PORT, enabled)
+    pub fn set_has_source_queue_id(&mut self, enabled: bool) {
+        self.0.set(Self::HAS_SOURCE_QUEUE_ID, enabled)
     }
 
     #[inline]
-    pub fn has_source_stream_port(&self) -> bool {
-        self.0.get(Self::HAS_SOURCE_STREAM_PORT)
+    pub fn has_source_queue_id(&self) -> bool {
+        self.0.get(Self::HAS_SOURCE_QUEUE_ID)
     }
 
     #[inline]

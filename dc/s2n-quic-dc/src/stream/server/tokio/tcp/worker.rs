@@ -9,7 +9,7 @@ use crate::{
     stream::{
         endpoint,
         environment::tokio::{self as env, Environment},
-        server,
+        recv, server,
         socket::Socket,
     },
 };
@@ -313,17 +313,21 @@ impl WorkerState {
             let subscriber_ctx = subscriber_ctx.take().unwrap();
             let (socket, remote_address) = stream.take().unwrap();
 
+            let recv_buffer = recv::buffer::Local::new(recv_buffer.take(), None);
+            let recv_buffer = recv::buffer::Either::A(recv_buffer);
+
+            let peer = env::tcp::Reregistered {
+                socket,
+                peer_addr: remote_address,
+                local_port: context.local_port,
+                recv_buffer,
+            };
+
             let stream_builder = match endpoint::accept_stream(
                 now,
                 &context.env,
-                env::TcpReregistered {
-                    socket,
-                    peer_addr: remote_address,
-                    local_port: context.local_port,
-                },
+                peer,
                 &initial_packet,
-                None,
-                Some(recv_buffer),
                 &context.secrets,
                 context.subscriber.clone(),
                 subscriber_ctx,
@@ -331,7 +335,7 @@ impl WorkerState {
             ) {
                 Ok(stream) => stream,
                 Err(error) => {
-                    if let Some(env::TcpReregistered { socket, .. }) = error.peer {
+                    if let Some(env::tcp::Reregistered { socket, .. }) = error.peer {
                         if !error.secret_control.is_empty() {
                             // if we need to send an error then update the state and loop back
                             // around
@@ -353,15 +357,11 @@ impl WorkerState {
             };
 
             {
-                let remote_address: SocketAddress = stream_builder.shared.read_remote_addr();
+                let remote_address: SocketAddress = stream_builder.shared.remote_addr();
                 let remote_address = &remote_address;
-                let credential_id = &*stream_builder.shared.credentials().id;
-                let stream_id = stream_builder
-                    .shared
-                    .application()
-                    .stream_id
-                    .into_varint()
-                    .as_u64();
+                let creds = stream_builder.shared.credentials();
+                let credential_id = &*creds.id;
+                let stream_id = creds.key_id.as_u64();
                 publisher.on_acceptor_tcp_stream_enqueued(
                     event::builder::AcceptorTcpStreamEnqueued {
                         remote_address,

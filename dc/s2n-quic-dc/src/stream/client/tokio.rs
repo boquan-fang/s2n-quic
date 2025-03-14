@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
-    event,
+    event, msg,
     path::secret,
     stream::{
         application::Stream,
         endpoint,
         environment::tokio::{self as env, Environment},
+        recv,
         socket::Protocol,
     },
 };
@@ -27,15 +28,16 @@ where
     Sub: event::Subscriber,
 {
     // ensure we have a secret for the peer
-    let peer = handshake.await?;
+    let entry = handshake.await?;
 
-    let stream = endpoint::open_stream(
-        env,
-        peer,
-        env::UdpUnbound(acceptor_addr.into()),
-        subscriber,
-        None,
-    )?;
+    // TODO potentially branch on not using the recv pool if we're under a certain concurrency?
+    let stream = if env.has_recv_pool() {
+        let peer = env::udp::Pooled(acceptor_addr.into());
+        endpoint::open_stream(env, entry, peer, subscriber, None)?
+    } else {
+        let peer = env::udp::Owned(acceptor_addr.into(), recv_buffer());
+        endpoint::open_stream(env, entry, peer, subscriber, None)?
+    };
 
     // build the stream inside the application context
     let mut stream = stream.connect()?;
@@ -61,7 +63,7 @@ where
     Sub: event::Subscriber,
 {
     // Race TCP handshake with the TLS handshake
-    let (socket, peer) = tokio::try_join!(TcpStream::connect(acceptor_addr), handshake,)?;
+    let (socket, entry) = tokio::try_join!(TcpStream::connect(acceptor_addr), handshake,)?;
 
     // Make sure TCP_NODELAY is set
     let _ = socket.set_nodelay(true);
@@ -79,17 +81,14 @@ where
     .into();
     let local_port = socket.local_addr()?.port();
 
-    let stream = endpoint::open_stream(
-        env,
-        peer,
-        env::TcpRegistered {
-            socket,
-            peer_addr,
-            local_port,
-        },
-        subscriber,
-        None,
-    )?;
+    let peer = env::tcp::Registered {
+        socket,
+        peer_addr,
+        local_port,
+        recv_buffer: recv_buffer(),
+    };
+
+    let stream = endpoint::open_stream(env, entry, peer, subscriber, None)?;
 
     // build the stream inside the application context
     let mut stream = stream.connect()?;
@@ -108,7 +107,7 @@ where
 /// The provided `map` must contain a shared secret for the `handshake_addr`
 #[inline]
 pub async fn connect_tcp_with<Sub>(
-    peer: secret::map::Peer,
+    entry: secret::map::Peer,
     socket: TcpStream,
     env: &Environment<Sub>,
     subscriber: Sub,
@@ -118,17 +117,15 @@ where
 {
     let local_port = socket.local_addr()?.port();
     let peer_addr = socket.peer_addr()?.into();
-    let stream = endpoint::open_stream(
-        env,
-        peer,
-        env::TcpRegistered {
-            socket,
-            peer_addr,
-            local_port,
-        },
-        subscriber,
-        None,
-    )?;
+
+    let peer = env::tcp::Registered {
+        socket,
+        peer_addr,
+        local_port,
+        recv_buffer: recv_buffer(),
+    };
+
+    let stream = endpoint::open_stream(env, entry, peer, subscriber, None)?;
 
     // build the stream inside the application context
     let mut stream = stream.connect()?;
@@ -152,4 +149,11 @@ where
         .write_from(&mut s2n_quic_core::buffer::reader::storage::Empty)
         .await
         .map(|_| ())
+}
+
+#[inline]
+fn recv_buffer() -> recv::shared::RecvBuffer {
+    // TODO replace this with a parameter once everything is in place
+    let recv_buffer = recv::buffer::Local::new(msg::recv::Message::new(9000), None);
+    recv::buffer::Either::A(recv_buffer)
 }
