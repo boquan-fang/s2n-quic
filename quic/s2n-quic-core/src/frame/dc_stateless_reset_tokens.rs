@@ -112,7 +112,7 @@ impl<'a> ::s2n_codec::DecoderParameterizedValue<'a> for DcStatelessResetTokens<'
         _tag: Self::Parameter,
         buffer: ::s2n_codec::DecoderBuffer<'a>,
     ) -> ::s2n_codec::DecoderBufferResult<'a, Self> {
-        impl_decode_parameterized!(ref_from_prefix_with_elems, buffer)
+        impl_decode_parameterized!(slice_from_prefix, buffer)
     }
 }
 
@@ -124,7 +124,7 @@ impl<'a> ::s2n_codec::DecoderParameterizedValueMut<'a> for DcStatelessResetToken
         _tag: Self::Parameter,
         buffer: ::s2n_codec::DecoderBufferMut<'a>,
     ) -> ::s2n_codec::DecoderBufferMutResult<'a, Self> {
-        impl_decode_parameterized!(mut_from_prefix_with_elems, buffer)
+        impl_decode_parameterized!(mut_slice_from_prefix, buffer)
     }
 }
 
