@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .with_io("127.0.0.1:4433")?
         .start()?;
 
-    while let Some(mut connection) = server.accept().await {
+    if let Some(mut connection) = server.accept().await {
         // spawn a new task for the connection
         tokio::spawn(async move {
             eprintln!("Connection accepted from {:?}", connection.remote_addr());
@@ -48,6 +48,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         });
     }
 
-    drop(_profiler);
+    // drop(_profiler);
     Ok(())
 }
