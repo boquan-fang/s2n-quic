@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use s2n_quic::{Client, Server};
+use futures::future::join_all;
+use s2n_quic::{client::Connect, Client, Server};
 use s2n_quic_core::stream::testing::Data;
+use std::net::SocketAddr;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct Snapshot {
@@ -91,61 +93,39 @@ async fn run(arg: Option<&str>) -> Result {
 }
 
 async fn client() -> Result {
+    println!("event\talloc_diff\trss_diff\tstreams");
+
+    let mut count = 0;
+    while count < 50 {
+        let mut fut = vec![];
+        for _ in 0..100 {
+            fut.push(tokio::spawn(client_run()));
+        }
+        join_all(fut).await;
+        count += 1;
+    }
+    Ok(())
+}
+
+async fn client_run() {
     let io = ("0.0.0.0", 0);
 
     let tls = s2n_quic_core::crypto::tls::testing::certificates::CERT_PEM;
 
     let client = Client::builder()
-        .with_io(io)?
-        .with_tls(tls)?
+        .with_io(io)
+        .unwrap()
+        .with_tls(tls)
+        .unwrap()
         .start()
         .unwrap();
 
-    println!("event\talloc_diff\trss_diff\tstreams");
-
-    for stream_count in 0..10 {
-        // wait for a bit to have the allocations settle
-        tokio::time::sleep(core::time::Duration::from_millis(1000)).await;
-
-        let snapshot = Snapshot::new();
-        let connect = s2n_quic::client::Connect::new(("127.0.0.1".parse()?, 4433))
-            .with_server_name("localhost");
-
-        let mut connection = client.connect(connect).await?;
-
-        // wait for a bit to have the allocations settle
-        tokio::time::sleep(core::time::Duration::from_millis(1000)).await;
-
-        snapshot.print_diff("post-handshake", stream_count);
-
-        for _ in 0..stream_count {
-            let mut stream = connection.open_bidirectional_stream().await?;
-
-            let mut data = Data::new(5 * 1_000_000);
-
-            while let Some(chunk) = data.send_one(usize::MAX) {
-                stream.send(chunk).await?;
-                // flush the chunk, otherwise we will fill up the send buffer and increase total
-                // allocations
-                stream.flush().await?;
-            }
-
-            stream.close().await?;
-        }
-
-        tokio::time::sleep(core::time::Duration::from_millis(5000)).await;
-
-        snapshot.print_diff("post-transfer", stream_count);
-
-        connection.close(123u8.into());
-        drop(connection);
-
-        tokio::time::sleep(core::time::Duration::from_millis(5000)).await;
-
-        snapshot.print_diff("post-close", stream_count);
-    }
-
-    Ok(())
+    let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
+    let connect = Connect::new(addr).with_server_name("localhost");
+    let mut connection = client.connect(connect).await.unwrap();
+    connection.close(123u8.into());
+    drop(connection);
+    // drop(client);
 }
 
 async fn server() -> Result {

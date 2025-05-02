@@ -31,4 +31,14 @@ async fn run() {
     let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
     let connect = Connect::new(addr).with_server_name("localhost");
     let mut connection = client.connect(connect).await.unwrap();
+
+    // Explicitly close the connection with a timeout
+    let _ = tokio::time::timeout(
+        std::time::Duration::from_millis(100),
+        connection.close(0u8.into()),
+    )
+    .await;
+
+    // Explicitly drop the client to ensure all resources are cleaned up
+    drop(client);
 }
