@@ -36,6 +36,7 @@ mod connection_migration;
 mod deduplicate;
 mod handshake_cid_rotation;
 mod interceptor;
+mod memory_investigation;
 mod mtu;
 mod no_tls;
 mod platform_events;
