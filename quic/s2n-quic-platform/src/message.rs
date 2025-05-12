@@ -67,7 +67,6 @@ impl Storage {
 impl Drop for Storage {
     fn drop(&mut self) {
         unsafe {
-            println!("Dropping Storage!");
             // Safety: pointer was allocated with self.layout
             alloc::alloc::dealloc(self.as_ptr(), self.layout)
         }

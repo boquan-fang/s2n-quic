@@ -46,6 +46,7 @@ use s2n_quic_core::{
     token::{self, Format},
     transport::parameters::{ClientTransportParameters, DcSupportedVersions},
 };
+use std::sync::atomic::{AtomicU16, Ordering};
 
 pub mod close;
 mod config;
@@ -61,6 +62,8 @@ mod version;
 pub use config::{Config, Context};
 pub use packet_buffer::Buffer as PacketBuffer;
 pub use s2n_quic_core::endpoint::*;
+
+pub static CLIENT_DROPPED_COUNT: AtomicU16 = AtomicU16::new(0);
 
 const DEFAULT_MAX_PEERS: usize = 1024;
 
@@ -93,7 +96,10 @@ impl<Cfg: Config> Drop for Endpoint<Cfg> {
     fn drop(&mut self) {
         let endpoint_type = match Cfg::ENDPOINT_TYPE {
             endpoint::Type::Server => "Server",
-            endpoint::Type::Client => "Client",
+            endpoint::Type::Client => {
+                CLIENT_DROPPED_COUNT.fetch_add(1, Ordering::Relaxed);
+                "Client"
+            }
         };
         println!("Dropping the {} Endpoint!", endpoint_type);
     }
