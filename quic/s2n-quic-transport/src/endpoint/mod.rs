@@ -91,7 +91,11 @@ pub struct Endpoint<Cfg: Config> {
 
 impl<Cfg: Config> Drop for Endpoint<Cfg> {
     fn drop(&mut self) {
-        println!("Dropping Endpoint!");
+        let endpoint_type = match Cfg::ENDPOINT_TYPE {
+            endpoint::Type::Server => "Server",
+            endpoint::Type::Client => "Client",
+        };
+        println!("Dropping the {} Endpoint!", endpoint_type);
     }
 }
 

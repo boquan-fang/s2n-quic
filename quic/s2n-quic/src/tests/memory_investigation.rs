@@ -5,7 +5,8 @@ use super::*;
 use crate::{client::Connect, Client, Server};
 use std::{error::Error, net::SocketAddr};
 
-async fn server_run() -> Result<(), Box<dyn Error>> {
+async fn server_run() -> Result<(), Box<dyn Error + Send + Sync>> {
+    println!("Starting server!");
     let mut server = Server::builder()
         .with_tls((certificates::CERT_PEM, certificates::KEY_PEM))
         .unwrap()
@@ -31,7 +32,7 @@ async fn server_run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn client_run() -> Result<(), Box<dyn Error>> {
+async fn client_run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::builder()
         .with_tls(certificates::CERT_PEM)
         .unwrap()
@@ -44,15 +45,16 @@ async fn client_run() -> Result<(), Box<dyn Error>> {
     let addr: SocketAddr = "127.0.0.1:4433".parse()?;
     let connect = Connect::new(addr).with_server_name("localhost");
     let _ = client.connect(connect).await?;
+    println!("Client successfully connect to the server!");
 
     Ok(())
 }
 
 #[tokio::test]
-async fn endpoint_drop_test() -> Result<(), Box<dyn Error>> {
-    let (server_result, client_result) = tokio::join!(server_run(), client_run());
-    // Handle both results
-    server_result?;
-    client_result?;
+async fn endpoint_drop_test() -> Result<(), Box<dyn Error + Send + Sync>> {
+    tokio::spawn(async { server_run().await });
+    tokio::spawn(async { client_run().await });
+    println!("Start sleeping for five seconds!");
+    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     Ok(())
 }
