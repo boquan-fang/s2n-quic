@@ -62,6 +62,9 @@ unstable-limits = ["s2n-quic-core/unstable-limits"]
 # The feature enables the close formatter provider
 unstable-provider-connection-close-formatter = []
 
+[profile.release]
+debug = true
+
 [dependencies]
 bytes = { version = "1", default-features = false }
 cfg-if = "1"

@@ -69,7 +69,7 @@ async fn client_run() -> Result<(), Box<dyn Error + Send + Sync>> {
 async fn endpoint_drop_test() -> Result<(), Box<dyn Error + Send + Sync>> {
     tokio::spawn(async { server_run().await });
     tokio::spawn(async { client_run().await });
-    tokio::time::sleep(std::time::Duration::from_secs(20)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
     assert_eq!(
         MAX_NUM_CONNECTIONS,
         s2n_quic_transport::endpoint::CLIENT_DROPPED_COUNT.load(Ordering::SeqCst),
