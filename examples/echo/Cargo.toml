@@ -7,6 +7,7 @@ edition = "2021"
 [dependencies]
 s2n-quic = { version = "1", path = "../../quic/s2n-quic" }
 tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 
 [workspace]
 members = ["."]
