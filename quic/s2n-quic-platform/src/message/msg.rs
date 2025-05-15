@@ -214,6 +214,7 @@ pub(super) unsafe fn alloc<T: Copy + Sized, F: Fn(&mut T) -> &mut msghdr>(
     // calculate the layout of the storage for the given configuration
     let (layout, entry_offset, header_offset, payload_offset) =
         layout::<T>(entries, payload_len, offset);
+    println!("Create a Storage layout with a size of {}", layout.size());
 
     // allocate a single contiguous block of memory
     let storage = super::Storage::new(layout);

@@ -200,6 +200,10 @@ impl Io {
             let rx_cooldown = cooldown("RX");
 
             for idx in 0usize..rx_socket_count {
+                println!(
+                    "rx create a ring pair with payload length of {}",
+                    payload_len
+                );
                 let (producer, consumer) = socket::ring::pair(entries, payload_len);
                 consumers.push(consumer);
 
@@ -257,6 +261,10 @@ impl Io {
             let tx_cooldown = cooldown("TX");
 
             for idx in 0usize..tx_socket_count {
+                println!(
+                    "tx create a ring pair with payload length of {}",
+                    payload_len
+                );
                 let (producer, consumer) = socket::ring::pair(entries, payload_len);
                 producers.push(producer);
 

@@ -89,6 +89,16 @@ pub struct Endpoint<Cfg: Config> {
     close_packet_buffer: packet_buffer::Buffer,
 }
 
+impl<Cfg: Config> Drop for Endpoint<Cfg> {
+    fn drop(&mut self) {
+        let endpoint_type = match Cfg::ENDPOINT_TYPE {
+            endpoint::Type::Server => "Server",
+            endpoint::Type::Client => "Client",
+        };
+        println!("Dropping the {} Endpoint!", endpoint_type);
+    }
+}
+
 impl<Cfg: Config> s2n_quic_core::endpoint::Endpoint for Endpoint<Cfg> {
     type PathHandle = Cfg::PathHandle;
     type Subscriber = Cfg::EventSubscriber;
