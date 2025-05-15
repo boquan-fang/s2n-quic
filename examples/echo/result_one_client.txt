@@ -1,0 +1,1261 @@
+reading file "heaptrack.quic_echo_client.1167148.zst" - please wait, this might take some time...
+Debuggee command was: ./target/release/quic_echo_client
+finished reading file, now analyzing data:
+
+MOST CALLS TO ALLOCATION FUNCTIONS
+65 calls to allocation functions with 21.84K peak consumption from
+_$LT$tokio..signal..registry..EventInfo$u20$as$u20$core..default..Default$GT$::default::hdd7c05f52044fc8c
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+64 calls with 21.50K peak consumption from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 calls with 336B peak consumption from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+52 calls to allocation functions with 3.58K peak consumption from
+tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 768B peak consumption from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 1.28K peak consumption from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 640B peak consumption from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 calls with 0B peak consumption from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 calls with 256B peak consumption from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+  and 2 from 2 other places
+
+50 calls to allocation functions with 1.38K peak consumption from
+__cxa_thread_atexit_impl
+  at ./stdlib/cxa_thread_atexit_impl.c:106
+  in /lib/x86_64-linux-gnu/libc.so.6
+16 calls with 416B peak consumption from:
+    std::thread::spawnhook::ChildSpawnHooks::run::he0953959a1e48bd4
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hed2b2ae222593529
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+16 calls with 416B peak consumption from:
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+13 calls with 416B peak consumption from:
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1 calls with 32B peak consumption from:
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 calls with 32B peak consumption from:
+    std::thread::spawnhook::run_spawn_hooks::h20c39a322f1181cd
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::thread::Builder::spawn_unchecked::h542ba1de914f8438
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+  and 3 from 3 other places
+
+32 calls to allocation functions with 2.18K peak consumption from
+std::thread::Builder::spawn_unchecked::h542ba1de914f8438
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 768B peak consumption from:
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 1.41K peak consumption from:
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+32 calls to allocation functions with 33.41K peak consumption from
+tokio::runtime::scheduler::multi_thread::queue::local::h36bf75a75e3e07eb
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 32.77K peak consumption from:
+    tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 640B peak consumption from:
+    tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+22 calls to allocation functions with 11.26K peak consumption from
+__rdl_alloc
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 4.10K peak consumption from:
+    tokio::runtime::task::core::Cell$LT$T$C$S$GT$::new::hb592ee91d2c58068
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+3 calls with 1.02K peak consumption from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::create_hashtable::h2ae8ec72b8a00995
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+2 calls with 6.14K peak consumption from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1 calls with 0B peak consumption from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::create_hashtable::h2ae8ec72b8a00995
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::unlock_slow::h68ae24df4efa4b04
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+17 calls to allocation functions with 152B peak consumption from
+__pthread_attr_extension
+  at ./nptl/pthread_attr_extension.c:28
+  in /lib/x86_64-linux-gnu/libc.so.6
+16 calls with 152B peak consumption from:
+    __GI___pthread_attr_setaffinity_np
+      at ./nptl/pthread_attr_setaffinity.c:45
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __pthread_getattr_np
+      at ./nptl/pthread_getattr_np.c:194
+      in /lib/x86_64-linux-gnu/libc.so.6
+    std::sys::pal::unix::stack_overflow::imp::make_handler::h9b122f6f6f0c057c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1 calls with 0B peak consumption from:
+    __GI___pthread_attr_setaffinity_np
+      at ./nptl/pthread_attr_setaffinity.c:45
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __pthread_getattr_np
+      at ./nptl/pthread_getattr_np.c:194
+      in /lib/x86_64-linux-gnu/libc.so.6
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+17 calls to allocation functions with 32B peak consumption from
+__GI___pthread_attr_setaffinity_np
+  at ./nptl/pthread_attr_setaffinity.c:51
+  in /lib/x86_64-linux-gnu/libc.so.6
+16 calls with 32B peak consumption from:
+    __pthread_getattr_np
+      at ./nptl/pthread_getattr_np.c:194
+      in /lib/x86_64-linux-gnu/libc.so.6
+    std::sys::pal::unix::stack_overflow::imp::make_handler::h9b122f6f6f0c057c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1 calls with 0B peak consumption from:
+    __pthread_getattr_np
+      at ./nptl/pthread_getattr_np.c:194
+      in /lib/x86_64-linux-gnu/libc.so.6
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+17 calls to allocation functions with 64B peak consumption from
+__pthread_getattr_np
+  at ./nptl/pthread_getattr_np.c:180
+  in /lib/x86_64-linux-gnu/libc.so.6
+16 calls with 64B peak consumption from:
+    std::sys::pal::unix::stack_overflow::imp::make_handler::h9b122f6f6f0c057c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1 calls with 0B peak consumption from:
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+17 calls to allocation functions with 100.48K peak consumption from
+_$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::h58bb5c5fbd5a86c1
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+16 calls with 99.84K peak consumption from:
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 calls with 640B peak consumption from:
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+
+PEAK MEMORY CONSUMERS
+100.48K peak memory consumed over 17 calls from
+_$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::h58bb5c5fbd5a86c1
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+99.84K consumed over 16 calls from:
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+640B consumed over 1 calls from:
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+73.73K peak memory consumed over 1 calls from
+0x7d1d5beb738e
+  in /lib/x86_64-linux-gnu/libstdc++.so.6
+73.73K consumed over 1 calls from:
+    call_init
+      at ./elf/dl-init.c:74
+      in /lib64/ld-linux-x86-64.so.2
+    _dl_init::call_init
+      at ./elf/dl-init.c:120
+      in /lib64/ld-linux-x86-64.so.2
+    _dl_init
+      at ./elf/./elf/dl-init.c:121
+    _dl_start_user
+      in /lib64/ld-linux-x86-64.so.2
+
+33.41K peak memory consumed over 32 calls from
+tokio::runtime::scheduler::multi_thread::queue::local::h36bf75a75e3e07eb
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+32.77K consumed over 16 calls from:
+    tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+640B consumed over 16 calls from:
+    tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+21.84K peak memory consumed over 65 calls from
+_$LT$tokio..signal..registry..EventInfo$u20$as$u20$core..default..Default$GT$::default::hdd7c05f52044fc8c
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+21.50K consumed over 64 calls from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+336B consumed over 1 calls from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+12.29K peak memory consumed over 1 calls from
+mio::event::events::Events::with_capacity::h44f65da877eee78b
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+12.29K consumed over 1 calls from:
+    tokio::runtime::io::driver::Driver::new::hfc531ce412dded75
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+11.26K peak memory consumed over 22 calls from
+__rdl_alloc
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+6.14K consumed over 2 calls from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+4.10K consumed over 16 calls from:
+    tokio::runtime::task::core::Cell$LT$T$C$S$GT$::new::hb592ee91d2c58068
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1.02K consumed over 3 calls from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::create_hashtable::h2ae8ec72b8a00995
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+
+5.63K peak memory consumed over 16 calls from
+__GI__dl_allocate_tls::allocate_dtv::calloc
+  at ../include/rtld-malloc.h:44
+  in /lib64/ld-linux-x86-64.so.2
+__GI__dl_allocate_tls::allocate_dtv
+  at ./elf/../elf/dl-tls.c:370
+__GI__dl_allocate_tls
+  at ./elf/../elf/dl-tls.c:629
+5.63K consumed over 16 calls from:
+    __pthread_create_2_1::allocate_stack
+      at ./nptl/allocatestack.c:429
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __pthread_create_2_1
+      at ./nptl/./nptl/pthread_create.c:655
+    std::sys::pal::unix::thread::Thread::new::hde42aaccc02c639a
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::thread::Builder::spawn_unchecked::h542ba1de914f8438
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+3.58K peak memory consumed over 52 calls from
+tokio::runtime::scheduler::multi_thread::worker::create::h0c723012f99207ca
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1.28K consumed over 16 calls from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+768B consumed over 16 calls from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+640B consumed over 16 calls from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+512B consumed over 1 calls from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+256B consumed over 1 calls from:
+    tokio::runtime::scheduler::multi_thread::MultiThread::new::hf05e8d817acba546
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+  and 128B from 2 other places
+
+2.18K peak memory consumed over 32 calls from
+std::thread::Builder::spawn_unchecked::h542ba1de914f8438
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1.41K consumed over 16 calls from:
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+768B consumed over 16 calls from:
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+1.56K peak memory consumed over 1 calls from
+_$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1.56K consumed over 1 calls from:
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+
+MEMORY LEAKS
+21.84K leaked over 65 calls from
+_$LT$tokio..signal..registry..EventInfo$u20$as$u20$core..default..Default$GT$::default::hdd7c05f52044fc8c
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+21.50K leaked over 64 calls from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+336B leaked over 1 calls from:
+    _$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+7.17K leaked over 22 calls from
+__rdl_alloc
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+6.14K leaked over 2 calls from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+1.02K leaked over 3 calls from:
+    parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::create_hashtable::h2ae8ec72b8a00995
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+
+5.63K leaked over 16 calls from
+__GI__dl_allocate_tls::allocate_dtv::calloc
+  at ../include/rtld-malloc.h:44
+  in /lib64/ld-linux-x86-64.so.2
+__GI__dl_allocate_tls::allocate_dtv
+  at ./elf/../elf/dl-tls.c:370
+__GI__dl_allocate_tls
+  at ./elf/../elf/dl-tls.c:629
+5.63K leaked over 16 calls from:
+    __pthread_create_2_1::allocate_stack
+      at ./nptl/allocatestack.c:429
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __pthread_create_2_1
+      at ./nptl/./nptl/pthread_create.c:655
+    std::sys::pal::unix::thread::Thread::new::hde42aaccc02c639a
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::thread::Builder::spawn_unchecked::h542ba1de914f8438
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+1.56K leaked over 1 calls from
+_$LT$alloc..vec..Vec$LT$T$GT$$u20$as$u20$alloc..vec..spec_from_iter..SpecFromIter$LT$T$C$I$GT$$GT$::from_iter::hd5da4af18b400338
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1.56K leaked over 1 calls from:
+    _ZN3std4sync6poison4once4Once9call_once28_$u7b$$u7b$closure$u7d$$u7d$17hcac6d92a00dcf427E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::sync::once::futex::Once::call::hd499fa9e5b24dca6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN5tokio4util9once_cell17OnceCell$LT$T$GT$7do_init17h4d4c50521b4a7593E.llvm.8784078309605549544
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::signal::Driver::new::h7154b349d674535c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::driver::Driver::new::h80a0b94e3f7aa8d9
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+96B leaked over 6 calls from
+parking_lot_core::parking_lot::HashTable::new::h1a7fbbddab23a3e9
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+64B leaked over 2 calls from:
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+32B leaked over 3 calls from:
+    parking_lot_core::parking_lot::create_hashtable::h2ae8ec72b8a00995
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot_core::parking_lot::ThreadData::new::hd5417f83cd8a4c63
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::thread_local::native::lazy::Storage$LT$T$C$D$GT$::initialize::haf632c67225ff347
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    parking_lot::raw_mutex::RawMutex::lock_slow::hf4cc0508fcfc239e
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Inner::run::hf548273418b73806
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hf9f9b337d352baec
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    core::ops::function::FnOnce::call_once$u7b$$u7b$vtable.shim$u7d$$u7d$::ha7717c04461ebbc1
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::pal::unix::thread::Thread::new::thread_start::ha07e360225fa3528
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    start_thread
+      at ./nptl/pthread_create.c:447
+      in /lib/x86_64-linux-gnu/libc.so.6
+    __clone3
+      at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+      in /lib/x86_64-linux-gnu/libc.so.6
+
+
+MOST TEMPORARY ALLOCATIONS
+15 temporary allocations of 16 allocations in total (93.75%) from
+tokio::runtime::builder::Builder::new::_$u7b$$u7b$closure$u7d$$u7d$::h5e115e929df9fefb
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+15 temporary allocations of 16 allocations in total (93.75%) from:
+    tokio::runtime::blocking::pool::Spawner::spawn_task::h346e1bf7543b8fda
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::Spawner::spawn_blocking::h5348a460be7f76e6
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::blocking::pool::spawn_blocking::h5588ef3bdcebde1f
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::scheduler::multi_thread::worker::Launch::launch::hf9e3fe4d843ad5fe
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+1 temporary allocations of 1 allocations in total (100.00%) from
+0x7d1d5beb738e
+  in /lib/x86_64-linux-gnu/libstdc++.so.6
+1 temporary allocations of 1 allocations in total (100.00%) from:
+    call_init
+      at ./elf/dl-init.c:74
+      in /lib64/ld-linux-x86-64.so.2
+    _dl_init::call_init
+      at ./elf/dl-init.c:120
+      in /lib64/ld-linux-x86-64.so.2
+    _dl_init
+      at ./elf/./elf/dl-init.c:121
+    _dl_start_user
+      in /lib64/ld-linux-x86-64.so.2
+
+1 temporary allocations of 1 allocations in total (100.00%) from
+__GI___getdelim
+  at ./libio/iogetdelim.c:107
+  in /lib/x86_64-linux-gnu/libc.so.6
+1 temporary allocations of 1 allocations in total (100.00%) from:
+    __pthread_getattr_np
+      at ./nptl/pthread_getattr_np.c:122
+      in /lib/x86_64-linux-gnu/libc.so.6
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+1 temporary allocations of 4 allocations in total (25.00%) from
+std::thread::available_parallelism::h38386f40613196f1
+  in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+1 temporary allocations of 1 allocations in total (100.00%) from:
+    tokio::loom::std::sys::num_cpus::h8eaf82c4ac2c83d0
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    tokio::runtime::builder::Builder::build::h4d3692bcd57b83e7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    quic_echo_client::main::hada546fed9c4194c
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::sys::backtrace::__rust_begin_short_backtrace::hd453ab463faeecd7
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    _ZN3std2rt10lang_start28_$u7b$$u7b$closure$u7d$$u7d$17h2b1df7b81ab175d9E.llvm.7027483572325477261
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    std::rt::lang_start_internal::hbb268f70c879621d
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+    main
+      in /home/ubuntu/workspace/s2n-quic/examples/echo/target/release/quic_echo_client
+
+
+total runtime: 0.00s.
+calls to allocation functions: 441 (147000/s)
+temporary memory allocations: 18 (6000/s)
+peak heap memory consumption: 272.82K
+peak RSS (including heaptrack overhead): 5.91M
+total memory leaked: 36.30K
