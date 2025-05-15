@@ -13,6 +13,35 @@ pub static CERT_PEM: &str = include_str!(concat!(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // // 200 Clients
+    // let mut count = 0;
+    // loop {
+    //     if count >= 2 {
+    //         break;
+    //     }
+    //     let mut fut = vec![];
+    //     for _ in 0..100 {
+    //         fut.push(tokio::spawn(run()));
+    //     }
+    //     join_all(fut).await;
+    //     count += 1;
+    // }
+
+    // // 100 Clients
+    // let mut fut = vec![];
+    // for _ in 0..100 {
+    //     fut.push(tokio::spawn(run()));
+    // }
+    // join_all(fut).await;
+
+    // // 1 Client
+    // let mut fut = vec![];
+    // for _ in 0..1 {
+    //     fut.push(tokio::spawn(run()));
+    // }
+    // join_all(fut).await;
+
+    // Infinite Clients
     loop {
         let mut fut = vec![];
         for _ in 0..100 {
@@ -34,10 +63,4 @@ async fn run() {
     let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
     let connect = Connect::new(addr).with_server_name("localhost");
     let mut connection = client.connect(connect).await.unwrap();
-
-    // Explicitly close the connection to ensure resources are freed
-    drop(connection);
-
-    // Explicitly drop the client to ensure all resources are freed
-    drop(client);
 }
