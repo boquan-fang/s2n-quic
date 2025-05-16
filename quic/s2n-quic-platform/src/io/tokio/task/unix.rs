@@ -24,7 +24,9 @@ pub async fn rx<S: Into<std::net::UdpSocket>, M: UnixMessage + Unpin>(
     socket.set_nonblocking(true).unwrap();
 
     let socket = AsyncFd::new(socket).unwrap();
+    println!("CHECK!");
     let result = rx::Receiver::new(producer, socket, cooldown, stats).await;
+    println!("Spawining rx!");
     if let Some(err) = result {
         Err(err)
     } else {
@@ -44,6 +46,7 @@ pub async fn tx<S: Into<std::net::UdpSocket>, M: UnixMessage + Unpin>(
 
     let socket = AsyncFd::new(socket).unwrap();
     let result = tx::Sender::new(consumer, socket, gso, cooldown, stats).await;
+    println!("Spawining tx!");
     if let Some(err) = result {
         Err(err)
     } else {

@@ -27,13 +27,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //     count += 1;
     // }
 
-    // // 100 Clients
-    // let mut fut = vec![];
-    // for _ in 0..100 {
-    //     fut.push(tokio::spawn(run()));
-    // }
-    // join_all(fut).await;
-
+    // 100 Clients
+    let mut fut = vec![];
+    for _ in 0..100 {
+        fut.push(tokio::spawn(run()));
+    }
+    join_all(fut).await;
+    tokio::time::sleep(core::time::Duration::from_secs(99999999)).await;
     // // 1 Client
     // let mut fut = vec![];
     // for _ in 0..1 {
@@ -41,14 +41,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // }
     // join_all(fut).await;
 
-    // Infinite Clients
-    loop {
-        let mut fut = vec![];
-        for _ in 0..100 {
-            fut.push(tokio::spawn(run()));
-        }
-        join_all(fut).await;
-    }
+    // // Infinite Clients
+    // loop {
+    //     let mut fut = vec![];
+    //     for _ in 0..100 {
+    //         fut.push(tokio::spawn(run()));
+    //     }
+    //     join_all(fut).await;
+    // }
     Ok(())
 }
 
