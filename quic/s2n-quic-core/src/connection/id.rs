@@ -205,10 +205,7 @@ macro_rules! id {
     };
 }
 
-// Connection IDs that are generated locally and used to route packets from the peer to the local
-// endpoint. s2n-QUIC does not provide zero-length connection IDs, the minimum allowable LocalId
-// is 4 bytes.
-id!(LocalId, 4);
+id!(LocalId, 0);
 
 // Connection IDs used to route packets to the peer. The peer may choose to use zero-length
 // connection IDs.
@@ -451,9 +448,6 @@ mod tests {
 
         let connection_id_bytes = [0u8; InitialId::MIN_LEN];
         assert!(InitialId::try_from_bytes(&connection_id_bytes).is_some());
-
-        let connection_id_bytes = [0u8; LocalId::MIN_LEN - 1];
-        assert!(LocalId::try_from_bytes(&connection_id_bytes).is_none());
 
         let connection_id_bytes = [0u8; InitialId::MIN_LEN - 1];
         assert!(InitialId::try_from_bytes(&connection_id_bytes).is_none());

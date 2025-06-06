@@ -199,13 +199,6 @@ pub mod default {
                     .err()
             );
 
-            assert_eq!(
-                Some(connection::id::Error::InvalidLength),
-                Format::builder()
-                    .with_len(connection::LocalId::MIN_LEN - 1)
-                    .err()
-            );
-
             let lifetime = Duration::from_secs(1000);
             let format = Format::builder()
                 .with_lifetime(lifetime)

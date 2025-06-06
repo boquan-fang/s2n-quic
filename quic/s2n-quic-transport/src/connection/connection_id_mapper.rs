@@ -110,6 +110,12 @@ impl LocalIdMap {
         local_id: &connection::LocalId,
         internal_id: InternalConnectionId,
     ) -> Result<(), ()> {
+        // Always insert the pair if local_id is zero-length.
+        if local_id.is_empty() {
+            self.map.insert(*local_id, internal_id);
+            return Ok(());
+        }
+
         let entry = self.map.entry(*local_id);
         match entry {
             Entry::Occupied(_) => Err(()),

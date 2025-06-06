@@ -339,7 +339,7 @@ impl LocalIdRegistry {
         expiration: Option<Timestamp>,
         stateless_reset_token: stateless_reset::Token,
     ) -> Result<(), LocalIdRegistrationError> {
-        if self.registered_ids.iter().any(|id_info| id_info.id == *id) {
+        if self.registered_ids.iter().any(|id_info| id_info.id == *id) && id.len() != 0 {
             //= https://www.rfc-editor.org/rfc/rfc9000#section-5.1
             //# As a trivial example, this means the same connection ID
             //# MUST NOT be issued more than once on the same connection.
