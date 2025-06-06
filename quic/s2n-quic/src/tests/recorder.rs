@@ -98,6 +98,32 @@ event_recorder!(
 );
 
 event_recorder!(
+    ClientOriginalCID,
+    FrameReceived,
+    on_frame_received,
+    Vec<u8>,
+    |event: &events::FrameReceived, storage: &mut Vec<Vec<u8>>| {
+        match &event.packet_header {
+            events::PacketHeader::Initial { .. } => {
+                let cid = event.path.remote_cid.bytes.to_vec();
+                storage.push(cid);
+            }
+            _ => {}
+        }
+    }
+);
+
+event_recorder!(
+    PathChallengeUpdated,
+    PathChallengeUpdated,
+    on_path_challenge_updated,
+    PathChallengeStatus,
+    |event: &events::PathChallengeUpdated, storage: &mut Vec<PathChallengeStatus>| {
+        storage.push(event.path_challenge_status.clone());
+    }
+);
+
+event_recorder!(
     PacketDropped,
     PacketDropped,
     on_packet_dropped,
@@ -186,7 +212,7 @@ event_recorder!(
     }
 );
 
-use s2n_quic_core::event::api::DatagramDropReason;
+use s2n_quic_core::event::api::{DatagramDropReason, PathChallengeStatus};
 #[derive(Debug)]
 pub struct DatagramDroppedEvent {
     pub reason: DatagramDropReason,
