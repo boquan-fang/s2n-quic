@@ -11,6 +11,7 @@ fn zero_length_cid_client_connection_migration_test() {
     // TODO:: Create event subscribers
 
     test(model, |handle| {
+        // Set up a s2n-quic server
         let server = tls::Server::builder()
             .with_application_protocols(["h3"].iter())
             .unwrap()
@@ -26,7 +27,37 @@ fn zero_length_cid_client_connection_migration_test() {
             .with_random(Random::with_seed(456))?
             .start()?;
 
-        let addr = start_server(server)?;
+        let server_addr = start_server(server)?;
+
+        // Set up a Cloudflare Quiche client
+        let mut client_config = quiche::Config::new(quiche::PROTOCOL_VERSION).unwrap();
+        client_config
+            .set_application_protos(quiche::h3::APPLICATION_PROTOCOL)
+            .unwrap();
+        client_config.verify_peer(true);
+
+        // create a zero-length Source CID
+        let scid = quiche::ConnectionId::default();
+
+        let socket = handle.builder().build()?.socket();
+
+        // Create a QUIC connection and initiate handshake.
+        let mut conn = quiche::connect(
+            Some("localhost"),
+            &scid,
+            socket.local_addr().unwrap(),
+            server_addr,
+            &mut client_config,
+        )
+        .unwrap();
+
+        let mut out = [0; 1350];
+
+        let (_write, _send_info) = conn.send(&mut out).expect("initial send failed");
+
+        // TODO:: Add a send_to statement to send packets
+
+        assert!(conn.is_established());
 
         Ok(())
     })
