@@ -3,6 +3,7 @@
 
 use super::*;
 use crate::provider::tls::default::{self as tls};
+use s2n_quic_core::inet::ExplicitCongestionNotification::*;
 
 #[test]
 fn zero_length_cid_client_connection_migration_test() {
@@ -43,7 +44,7 @@ fn zero_length_cid_client_connection_migration_test() {
 
         // Create a QUIC connection and initiate handshake.
         let mut conn = quiche::connect(
-            Some("localhost"),
+            Some(&"localhost"),
             &scid,
             socket.local_addr().unwrap(),
             server_addr,
@@ -51,13 +52,22 @@ fn zero_length_cid_client_connection_migration_test() {
         )
         .unwrap();
 
+        // Check if the client is using zero-length CID
+        assert_eq!(conn.source_id().len(), 0);
+
+        // Establish handshake from the client to the server
         let mut out = [0; 1350];
 
-        let (_write, _send_info) = conn.send(&mut out).expect("initial send failed");
+        let (write, send_info) = conn.send(&mut out).expect("initial send failed");
 
         // TODO:: Add a send_to statement to send packets
+        socket
+            .send_to(send_info.to, NotEct, out[..write].to_vec())
+            .unwrap();
 
         assert!(conn.is_established());
+
+        // TODO:: Client perform connection migration
 
         Ok(())
     })
