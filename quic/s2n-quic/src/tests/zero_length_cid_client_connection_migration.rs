@@ -58,14 +58,23 @@ fn zero_length_cid_client_connection_migration_test() {
         // Establish handshake from the client to the server
         let mut out = [0; 1350];
 
-        let (write, send_info) = conn.send(&mut out).expect("initial send failed");
+        loop {
+            let (write, send_info) = match conn.send(&mut out) {
+                Ok(v) => v,
 
-        // TODO:: Add a send_to statement to send packets
-        socket
-            .send_to(send_info.to, NotEct, out[..write].to_vec())
-            .unwrap();
+                Err(quiche::Error::Done) => {
+                    break;
+                }
 
-        assert!(conn.is_established());
+                Err(_) => {
+                    panic!("Send failed!");
+                }
+            };
+
+            socket
+                .send_to(send_info.to, NotEct, out[..write].to_vec())
+                .unwrap();
+        }
 
         // TODO:: Client perform connection migration
 
