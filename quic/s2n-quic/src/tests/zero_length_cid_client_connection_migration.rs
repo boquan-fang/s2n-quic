@@ -3,13 +3,14 @@
 
 use super::*;
 use crate::provider::tls::default::{self as tls};
-use s2n_quic_core::inet::ExplicitCongestionNotification::*;
 
 #[test]
 fn zero_length_cid_client_connection_migration_test() {
     let model = Model::default();
 
-    // TODO:: Create event subscribers
+    // Create event subscribers to track frame received events
+    let initial_cid_subscriber = recorder::ClientOriginalCID::new();
+    let initial_cid_event = initial_cid_subscriber.events();
 
     test(model, |handle| {
         // Set up a s2n-quic server
@@ -24,7 +25,7 @@ fn zero_length_cid_client_connection_migration_test() {
         let server = Server::builder()
             .with_io(handle.builder().build()?)?
             .with_tls(server)?
-            .with_event(tracing_events())?
+            .with_event((tracing_events(), initial_cid_subscriber))?
             .with_random(Random::with_seed(456))?
             .start()?;
 
@@ -43,7 +44,7 @@ fn zero_length_cid_client_connection_migration_test() {
         let socket = handle.builder().build()?.socket();
 
         // Create a QUIC connection and initiate handshake.
-        let mut conn = quiche::connect(
+        let conn = quiche::connect(
             Some(&"localhost"),
             &scid,
             socket.local_addr().unwrap(),
@@ -55,30 +56,14 @@ fn zero_length_cid_client_connection_migration_test() {
         // Check if the client is using zero-length CID
         assert_eq!(conn.source_id().len(), 0);
 
-        // Establish handshake from the client to the server
-        let mut out = [0; 1350];
-
-        loop {
-            let (write, send_info) = match conn.send(&mut out) {
-                Ok(v) => v,
-
-                Err(quiche::Error::Done) => {
-                    break;
-                }
-
-                Err(_) => {
-                    panic!("Send failed!");
-                }
-            };
-
-            socket
-                .send_to(send_info.to, NotEct, out[..write].to_vec())
-                .unwrap();
-        }
-
-        // TODO:: Client perform connection migration
+        start_quiche_client(conn, socket).unwrap();
 
         Ok(())
     })
     .unwrap();
+
+    // Verify if the client's original CID is zero-length
+    let initial_cid_vec = initial_cid_event.lock().unwrap();
+    assert_eq!(initial_cid_vec.len(), 1);
+    assert_eq!(initial_cid_vec[0].len(), 0);
 }

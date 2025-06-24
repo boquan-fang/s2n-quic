@@ -11,7 +11,11 @@ use crate::{
     Client, Server,
 };
 use rand::{Rng, RngCore};
-use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
+use s2n_quic_core::{
+    crypto::tls::testing::certificates, havoc, inet::ExplicitCongestionNotification::*,
+    stream::testing::Data,
+};
+use s2n_quic_platform::io::testing::Socket;
 use std::net::SocketAddr;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
@@ -136,6 +140,69 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
             tracing::debug!("client sending {} chunk", chunk.len());
             send.send(chunk).await.unwrap();
         }
+    });
+
+    Ok(())
+}
+
+pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) -> Result {
+    let mut out = [0; 1350];
+
+    primary::spawn(async move {
+        // Write Initial handshake packets
+        let (write, send_info) = client_conn.send(&mut out).expect("Initial send failed");
+        tracing::debug!("quiche client sending {} bytes", write);
+        socket
+            .send_to(send_info.to, NotEct, out[..write].to_vec())
+            .unwrap();
+
+        // Main connection loop
+        loop {
+            // Process any incoming packets
+            match socket.try_recv_from() {
+                Ok(Some((from, _ecn, payload))) => {
+                    tracing::debug!("quiche client received {} bytes", payload.len());
+
+                    // Convert payload to a mutable buffer
+                    let mut buf_copy = payload.clone();
+
+                    // Process the incoming packet
+                    let _read = match client_conn.recv(
+                        &mut buf_copy,
+                        quiche::RecvInfo {
+                            from,
+                            to: socket.local_addr().unwrap(),
+                        },
+                    ) {
+                        Ok(v) => v,
+                        Err(quiche::Error::Done) => {
+                            // Packet was processed successfully but no action needed
+                            0
+                        }
+                        Err(e) => {
+                            tracing::debug!("quiche client receive error: {:?}", e);
+                            0
+                        }
+                    };
+
+                    // Check connection state
+                    if client_conn.is_established() {
+                        tracing::debug!("quiche client connection established");
+                        break;
+                    }
+                }
+                Ok(None) => {
+                    // No packets available, continue
+                }
+                Err(e) => {
+                    tracing::debug!("quiche client socket recv error: {:?}", e);
+                }
+            }
+
+            // Sleep a bit to avoid busy-waiting
+            crate::provider::io::testing::time::delay(std::time::Duration::from_millis(10)).await;
+        }
+        // TODO:: Client perform connection migration
     });
 
     Ok(())

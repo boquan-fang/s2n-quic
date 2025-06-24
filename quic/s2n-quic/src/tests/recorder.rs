@@ -129,6 +129,22 @@ event_recorder!(
     }
 );
 
+event_recorder!(
+    ClientOriginalCID,
+    FrameReceived,
+    on_frame_received,
+    Vec<u8>,
+    |event: &events::FrameReceived, storage: &mut Vec<Vec<u8>>| {
+        match &event.packet_header {
+            s2n_quic_core::event::api::PacketHeader::Initial { .. } => {
+                let cid = event.path.remote_cid.bytes.to_vec();
+                storage.push(cid);
+            }
+            _ => {}
+        }
+    }
+);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PacketDropReason {
     ConnectionError,
