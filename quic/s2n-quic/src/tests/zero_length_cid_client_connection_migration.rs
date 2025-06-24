@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::*;
-use crate::provider::tls::default::{self as tls};
+use crate::provider::{
+    limits,
+    tls::default::{self as tls},
+};
 
 #[test]
 fn zero_length_cid_client_connection_migration_test() {
@@ -27,6 +30,7 @@ fn zero_length_cid_client_connection_migration_test() {
             .with_tls(server)?
             .with_event((tracing_events(), initial_cid_subscriber))?
             .with_random(Random::with_seed(456))?
+            .with_limits(limits::Limits::new().with_max_active_connection_ids(3)?)?
             .start()?;
 
         let server_addr = start_server(server)?;
