@@ -37,6 +37,8 @@ fn zero_length_cid_client_connection_migration_test() {
             .set_application_protos(quiche::h3::APPLICATION_PROTOCOL)
             .unwrap();
         client_config.verify_peer(false);
+        client_config.set_disable_active_migration(false);
+        client_config.set_active_connection_id_limit(5);
 
         // create a zero-length Source CID
         let scid = quiche::ConnectionId::default();
