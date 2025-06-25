@@ -11,7 +11,11 @@ use crate::{
     Client, Server,
 };
 use rand::{Rng, RngCore};
-use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
+use s2n_quic_core::{
+    crypto::tls::testing::certificates, havoc, inet::ExplicitCongestionNotification::*,
+    stream::testing::Data,
+};
+use s2n_quic_platform::io::testing::Socket;
 use std::net::SocketAddr;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
@@ -135,6 +139,116 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
         while let Some(chunk) = send_data.send_one(usize::MAX) {
             tracing::debug!("client sending {} chunk", chunk.len());
             send.send(chunk).await.unwrap();
+        }
+    });
+
+    Ok(())
+}
+
+pub fn start_quiche_client(
+    mut client_conn: quiche::Connection,
+    socket: Socket,
+    server_addr: SocketAddr,
+) -> Result {
+    let mut out = [0; 1350];
+
+    let original_addr = socket.local_addr().unwrap();
+    let new_addr = std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
+
+    primary::spawn(async move {
+        // Write Initial handshake packets
+        let (write, send_info) = client_conn.send(&mut out).expect("Initial send failed");
+        tracing::debug!("quiche client sending {} bytes", write);
+        socket
+            .send_to(send_info.to, NotEct, out[..write].to_vec())
+            .unwrap();
+
+        let mut connection_established = false;
+        let mut migration_complete = false;
+        let mut path_probed = false;
+        loop {
+            // Process any incoming packets
+            match socket.try_recv_from() {
+                Ok(Some((from, _ecn, payload))) => {
+                    tracing::debug!("quiche client received {} bytes", payload.len());
+
+                    // Convert payload to a mutable buffer
+                    let mut buf_copy = payload.clone();
+
+                    // Process the incoming packet
+                    let _read = match client_conn.recv(
+                        &mut buf_copy,
+                        quiche::RecvInfo {
+                            from,
+                            to: socket.local_addr().unwrap(),
+                        },
+                    ) {
+                        Ok(v) => v,
+                        Err(quiche::Error::Done) => 0,
+                        Err(e) => {
+                            tracing::debug!("quiche client receive error: {:?}", e);
+                            0
+                        }
+                    };
+
+                    if client_conn.is_established() {
+                        tracing::debug!("quiche client connection established");
+                        connection_established = true;
+                    }
+                }
+                Ok(None) => {}
+                Err(e) => {
+                    tracing::debug!("quiche client socket recv error: {:?}", e);
+                }
+            }
+
+            loop {
+                let (write, send_info) = match client_conn.send(&mut out) {
+                    Ok(v) => v,
+                    Err(quiche::Error::Done) => {
+                        break;
+                    }
+                    Err(e) => {
+                        tracing::debug!("quiche client send error: {:?}", e);
+                        break;
+                    }
+                };
+
+                tracing::debug!("quiche client sending {} bytes", write);
+                socket
+                    .send_to(send_info.to, NotEct, out[..write].to_vec())
+                    .unwrap();
+            }
+
+            if connection_established {
+                while let Some(qe) = client_conn.path_event_next() {
+                    match qe {
+                        quiche::PathEvent::Validated(local_addr, peer_addr) => {
+                            socket.rebind(local_addr);
+                            client_conn.migrate(local_addr, peer_addr).unwrap();
+                            migration_complete = true;
+                            path_probed = true;
+                        }
+                        _ => {}
+                    }
+                }
+
+                // Perform connection migration after the connection is established.
+                tracing::debug!(
+                    "the number of available dcid is {}",
+                    client_conn.available_dcids()
+                );
+                if !path_probed {
+                    client_conn.probe_path(new_addr, server_addr).unwrap();
+                }
+
+                if migration_complete {
+                    break;
+                }
+            }
+
+            // Sleep a bit to avoid busy-waiting
+            crate::provider::io::testing::time::delay(std::time::Duration::from_millis(10)).await;
         }
     });
 
