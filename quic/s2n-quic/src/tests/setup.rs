@@ -147,7 +147,6 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
 
 pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) -> Result {
     let mut out = [0; 1350];
-    let mut buf = [0; 65535];
 
     primary::spawn(async move {
         // Write Initial handshake packets
@@ -159,7 +158,7 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
 
         // Main connection loop - wait for connection establishment
         let mut connection_established = false;
-        while !connection_established {
+        loop {
             // Process any incoming packets
             match socket.try_recv_from() {
                 Ok(Some((from, _ecn, payload))) => {
@@ -220,136 +219,37 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
                     .unwrap();
             }
 
-            // Sleep a bit to avoid busy-waiting
-            crate::provider::io::testing::time::delay(std::time::Duration::from_millis(10)).await;
-        }
+            if connection_established {
+                // Connection is established, now perform connection migration
+                tracing::debug!("Performing connection migration");
 
-        // Connection is established, now perform connection migration
-        tracing::debug!("Performing connection migration");
+                // Get the original address
+                let original_addr = socket.local_addr().unwrap();
 
-        // Get the original address
-        let original_addr = socket.local_addr().unwrap();
+                // Create a new address by incrementing the port
+                let new_addr =
+                    std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
 
-        // Create a new address by incrementing the port
-        let new_addr = std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
+                // Rebind the socket to the new address
+                socket.rebind(new_addr);
+                tracing::debug!("Rebinding socket to new address: {}", new_addr);
 
-        // Rebind the socket to the new address
-        socket.rebind(new_addr);
-        tracing::debug!("Rebinding socket to new address: {}", new_addr);
-
-        // Migrate the connection's source address
-        match client_conn.migrate_source(new_addr) {
-            Ok(_) => {
-                tracing::debug!("Connection source migration successful");
-            }
-            Err(e) => {
-                tracing::debug!("Connection source migration failed: {:?}", e);
-            }
-        }
-
-        // Instead of using probe_path directly, we'll send data on a stream
-        // which will implicitly trigger path validation
-        tracing::debug!("Initiating path validation by sending data");
-
-        // Open a new stream and send data to trigger path validation
-        let stream_id = 0; // Use stream 0 for simplicity
-        let data = b"hello from migrated client";
-        match client_conn.stream_send(stream_id, data, false) {
-            Ok(written) => {
-                tracing::debug!(
-                    "Sent {} bytes on stream {} to trigger path validation",
-                    written,
-                    stream_id
-                );
-            }
-            Err(e) => {
-                tracing::debug!("Failed to send data for path validation: {:?}", e);
-            }
-        }
-
-        // Continue processing packets after migration
-        for _ in 0..20 {
-            // Process for a limited number of iterations
-            // Process any incoming packets
-            match socket.try_recv_from() {
-                Ok(Some((from, _ecn, payload))) => {
-                    tracing::debug!("Migrated client received {} bytes", payload.len());
-
-                    // Convert payload to a mutable buffer
-                    let mut buf_copy = payload.clone();
-
-                    // Process the incoming packet
-                    let _read = match client_conn
-                        .recv(&mut buf_copy, quiche::RecvInfo { from, to: new_addr })
-                    {
-                        Ok(v) => v,
-                        Err(quiche::Error::Done) => {
-                            // Packet was processed successfully but no action needed
-                            0
-                        }
-                        Err(e) => {
-                            tracing::debug!("Migrated client receive error: {:?}", e);
-                            0
-                        }
-                    };
-
-                    // Check for incoming stream data
-                    loop {
-                        match client_conn.stream_recv(0, &mut buf) {
-                            Ok((read, fin)) => {
-                                tracing::debug!(
-                                    "Migrated client received {} bytes on stream 0, fin: {}",
-                                    read,
-                                    fin
-                                );
-                                if fin {
-                                    break;
-                                }
-                            }
-                            Err(quiche::Error::Done) => {
-                                break;
-                            }
-                            Err(e) => {
-                                tracing::debug!("Migrated client stream recv error: {:?}", e);
-                                break;
-                            }
-                        }
-                    }
-                }
-                Ok(None) => {
-                    // No packets available, continue
-                }
-                Err(e) => {
-                    tracing::debug!("Migrated client socket recv error: {:?}", e);
-                }
-            }
-
-            // Send any outgoing packets from the new address
-            loop {
-                let (write, send_info) = match client_conn.send(&mut out) {
-                    Ok(v) => v,
-                    Err(quiche::Error::Done) => {
+                // Migrate the connection's source address
+                match client_conn.migrate_source(new_addr) {
+                    Ok(_) => {
+                        tracing::debug!("Connection source migration successful");
                         break;
                     }
                     Err(e) => {
-                        tracing::debug!("Migrated client send error: {:?}", e);
+                        tracing::debug!("Connection source migration failed: {:?}", e);
                         break;
                     }
-                };
-
-                if write > 0 {
-                    tracing::debug!("Migrated client sending {} bytes", write);
-                    socket
-                        .send_to(send_info.to, NotEct, out[..write].to_vec())
-                        .unwrap();
                 }
             }
 
             // Sleep a bit to avoid busy-waiting
             crate::provider::io::testing::time::delay(std::time::Duration::from_millis(10)).await;
         }
-
-        tracing::debug!("Connection migration test completed");
     });
 
     Ok(())
