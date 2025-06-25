@@ -145,8 +145,15 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
     Ok(())
 }
 
-pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) -> Result {
+pub fn start_quiche_client(
+    mut client_conn: quiche::Connection,
+    socket: Socket,
+    server_addr: SocketAddr,
+) -> Result {
     let mut out = [0; 1350];
+
+    let original_addr = socket.local_addr().unwrap();
+    let new_addr = std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
 
     primary::spawn(async move {
         // Write Initial handshake packets
@@ -158,6 +165,7 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
 
         // Main connection loop - wait for connection establishment
         let mut connection_established = false;
+        let mut migration_complete = false;
         loop {
             // Process any incoming packets
             match socket.try_recv_from() {
@@ -220,30 +228,21 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
             }
 
             if connection_established {
-                // Connection is established, now perform connection migration
-                tracing::debug!("Performing connection migration");
-
-                // Get the original address
-                let original_addr = socket.local_addr().unwrap();
-
-                // Create a new address by incrementing the port
-                let new_addr =
-                    std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
-
-                // Rebind the socket to the new address
-                socket.rebind(new_addr);
-                tracing::debug!("Rebinding socket to new address: {}", new_addr);
-
-                // Migrate the connection's source address
-                match client_conn.migrate_source(new_addr) {
-                    Ok(_) => {
-                        tracing::debug!("Connection source migration successful");
-                        break;
+                while let Some(qe) = client_conn.path_event_next() {
+                    match qe {
+                        quiche::PathEvent::Validated(local_addr, peer_addr) => {
+                            socket.rebind(local_addr);
+                            client_conn.migrate(local_addr, peer_addr).unwrap();
+                            migration_complete = true;
+                        }
+                        _ => {}
                     }
-                    Err(e) => {
-                        tracing::debug!("Connection source migration failed: {:?}", e);
-                        break;
-                    }
+                }
+
+                if !migration_complete {
+                    client_conn.probe_path(new_addr, server_addr).unwrap();
+                } else {
+                    break;
                 }
             }
 

@@ -62,7 +62,7 @@ fn zero_length_cid_client_connection_migration_test() {
         // Check if the client is using zero-length CID
         assert_eq!(conn.source_id().len(), 0);
 
-        start_quiche_client(conn, socket).unwrap();
+        start_quiche_client(conn, socket, server_addr).unwrap();
 
         Ok(())
     })
