@@ -48,6 +48,7 @@ fn zero_length_cid_client_connection_migration_test() {
         let scid = quiche::ConnectionId::default();
 
         let socket = handle.builder().build()?.socket();
+        let migrated_socket = handle.builder().build()?.socket();
 
         // Create a QUIC connection and initiate handshake.
         let conn = quiche::connect(
@@ -62,7 +63,7 @@ fn zero_length_cid_client_connection_migration_test() {
         // Check if the client is using zero-length CID
         assert_eq!(conn.source_id().len(), 0);
 
-        start_quiche_client(conn, socket, server_addr).unwrap();
+        start_quiche_client(conn, socket, migrated_socket, server_addr).unwrap();
 
         Ok(())
     })

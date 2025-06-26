@@ -148,12 +148,10 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
 pub fn start_quiche_client(
     mut client_conn: quiche::Connection,
     socket: Socket,
+    migrated_socket: Socket,
     server_addr: SocketAddr,
 ) -> Result {
     let mut out = [0; 1350];
-
-    let original_addr = socket.local_addr().unwrap();
-    let new_addr = std::net::SocketAddr::new(original_addr.ip(), original_addr.port() + 1);
 
     primary::spawn(async move {
         // Write Initial handshake packets
@@ -224,7 +222,6 @@ pub fn start_quiche_client(
                 while let Some(qe) = client_conn.path_event_next() {
                     match qe {
                         quiche::PathEvent::Validated(local_addr, peer_addr) => {
-                            socket.rebind(local_addr);
                             client_conn.migrate(local_addr, peer_addr).unwrap();
                             migration_complete = true;
                             path_probed = true;
@@ -239,6 +236,7 @@ pub fn start_quiche_client(
                     client_conn.available_dcids()
                 );
                 if !path_probed {
+                    let new_addr = migrated_socket.local_addr().unwrap();
                     client_conn.probe_path(new_addr, server_addr).unwrap();
                 }
 
