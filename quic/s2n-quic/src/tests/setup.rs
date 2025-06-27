@@ -161,7 +161,6 @@ pub fn start_quiche_client(
             .send_to(send_info.to, NotEct, out[..write].to_vec())
             .unwrap();
 
-        let mut connection_established = false;
         let mut migration_complete = false;
         let mut path_probed = false;
         loop {
@@ -188,11 +187,6 @@ pub fn start_quiche_client(
                             0
                         }
                     };
-
-                    if client_conn.is_established() {
-                        tracing::debug!("quiche client connection established");
-                        connection_established = true;
-                    }
                 }
                 Ok(None) => {}
                 Err(e) => {
@@ -218,26 +212,22 @@ pub fn start_quiche_client(
                     .unwrap();
             }
 
-            if connection_established {
-                while let Some(qe) = client_conn.path_event_next() {
-                    match qe {
-                        quiche::PathEvent::Validated(local_addr, peer_addr) => {
-                            client_conn.migrate(local_addr, peer_addr).unwrap();
-                            migration_complete = true;
-                            path_probed = true;
-                        }
-                        _ => {}
+            while let Some(qe) = client_conn.path_event_next() {
+                match qe {
+                    quiche::PathEvent::Validated(local_addr, peer_addr) => {
+                        client_conn.migrate(local_addr, peer_addr).unwrap();
+                        migration_complete = true;
                     }
+                    _ => {}
                 }
+            }
 
-                // Perform connection migration after the connection is established.
-                tracing::debug!(
-                    "the number of available dcid is {}",
-                    client_conn.available_dcids()
-                );
+            // Perform connection migration after the connection is established.
+            if client_conn.is_established() && client_conn.available_dcids() > 0 {
                 if !path_probed {
                     let new_addr = migrated_socket.local_addr().unwrap();
                     client_conn.probe_path(new_addr, server_addr).unwrap();
+                    path_probed = true;
                 }
 
                 if migration_complete {

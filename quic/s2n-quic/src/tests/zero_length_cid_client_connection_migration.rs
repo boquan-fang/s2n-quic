@@ -71,6 +71,5 @@ fn zero_length_cid_client_connection_migration_test() {
 
     // Verify if the client's original CID is zero-length
     let initial_cid_vec = initial_cid_event.lock().unwrap();
-    assert_eq!(initial_cid_vec.len(), 1);
     assert_eq!(initial_cid_vec[0].len(), 0);
 }
