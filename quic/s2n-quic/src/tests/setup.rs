@@ -164,52 +164,62 @@ pub fn start_quiche_client(
         let mut migration_complete = false;
         let mut path_probed = false;
         loop {
-            // Process any incoming packets
-            match socket.try_recv_from() {
-                Ok(Some((from, _ecn, payload))) => {
-                    tracing::debug!("quiche client received {} bytes", payload.len());
+            let sockets = vec![&socket, &migrated_socket];
+            for active_socket in sockets {
+                // Process any incoming packets
+                let local_addr = active_socket.local_addr().unwrap();
+                match active_socket.try_recv_from() {
+                    Ok(Some((from, _ecn, payload))) => {
+                        tracing::debug!("quiche client received {} bytes", payload.len());
 
-                    // Convert payload to a mutable buffer
-                    let mut buf_copy = payload.clone();
+                        // Convert payload to a mutable buffer
+                        let mut buf_copy = payload.clone();
 
-                    // Process the incoming packet
-                    let _read = match client_conn.recv(
-                        &mut buf_copy,
-                        quiche::RecvInfo {
-                            from,
-                            to: socket.local_addr().unwrap(),
-                        },
-                    ) {
-                        Ok(v) => v,
-                        Err(quiche::Error::Done) => 0,
-                        Err(e) => {
-                            tracing::debug!("quiche client receive error: {:?}", e);
-                            0
-                        }
-                    };
-                }
-                Ok(None) => {}
-                Err(e) => {
-                    tracing::debug!("quiche client socket recv error: {:?}", e);
-                }
-            }
-
-            loop {
-                let (write, send_info) = match client_conn.send(&mut out) {
-                    Ok(v) => v,
-                    Err(quiche::Error::Done) => {
-                        break;
+                        // Process the incoming packet
+                        let _read = match client_conn.recv(
+                            &mut buf_copy,
+                            quiche::RecvInfo {
+                                from,
+                                to: socket.local_addr().unwrap(),
+                            },
+                        ) {
+                            Ok(v) => v,
+                            Err(quiche::Error::Done) => 0,
+                            Err(e) => {
+                                tracing::debug!("quiche client receive error: {:?}", e);
+                                0
+                            }
+                        };
                     }
+                    Ok(None) => {}
                     Err(e) => {
-                        tracing::debug!("quiche client send error: {:?}", e);
-                        break;
+                        tracing::debug!("quiche client socket recv error: {:?}", e);
                     }
-                };
+                }
 
-                tracing::debug!("quiche client sending {} bytes", write);
-                socket
-                    .send_to(send_info.to, NotEct, out[..write].to_vec())
-                    .unwrap();
+                for peer_addr in client_conn.paths_iter(local_addr) {
+                    loop {
+                        let (write, send_info) = match client_conn.send_on_path(
+                            &mut out,
+                            Some(local_addr),
+                            Some(peer_addr),
+                        ) {
+                            Ok(v) => v,
+                            Err(quiche::Error::Done) => {
+                                break;
+                            }
+                            Err(e) => {
+                                tracing::debug!("quiche client send error: {:?}", e);
+                                break;
+                            }
+                        };
+
+                        tracing::debug!("quiche client sending {} bytes", write);
+                        active_socket
+                            .send_to(send_info.to, NotEct, out[..write].to_vec())
+                            .unwrap();
+                    }
+                }
             }
 
             while let Some(qe) = client_conn.path_event_next() {
@@ -231,7 +241,7 @@ pub fn start_quiche_client(
                 }
 
                 if migration_complete {
-                    break;
+                    // break;
                 }
             }
 
