@@ -17,6 +17,7 @@ use s2n_quic_core::{
 };
 use s2n_quic_platform::io::testing::Socket;
 use std::net::SocketAddr;
+use zerocopy::IntoBytes;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
 
@@ -152,17 +153,19 @@ pub fn start_quiche_client(
     server_addr: SocketAddr,
 ) -> Result {
     let mut out = [0; 1350];
+    let mut buf = [0; 1350];
+    let req = "Test Migration";
 
     primary::spawn(async move {
         // Write Initial handshake packets
         let (write, send_info) = client_conn.send(&mut out).expect("Initial send failed");
-        tracing::debug!("quiche client sending {} bytes", write);
         socket
             .send_to(send_info.to, NotEct, out[..write].to_vec())
             .unwrap();
 
-        let mut migration_complete = false;
         let mut path_probed = false;
+        let mut req_sent = false;
+        let mut test_string_received = false;
         loop {
             let sockets = vec![&socket, &migrated_socket];
             for active_socket in sockets {
@@ -170,8 +173,6 @@ pub fn start_quiche_client(
                 let local_addr = active_socket.local_addr().unwrap();
                 match active_socket.try_recv_from() {
                     Ok(Some((from, _ecn, payload))) => {
-                        tracing::debug!("quiche client received {} bytes", payload.len());
-
                         // Convert payload to a mutable buffer
                         let mut buf_copy = payload.clone();
 
@@ -180,20 +181,19 @@ pub fn start_quiche_client(
                             &mut buf_copy,
                             quiche::RecvInfo {
                                 from,
-                                to: socket.local_addr().unwrap(),
+                                to: active_socket.local_addr().unwrap(),
                             },
                         ) {
                             Ok(v) => v,
                             Err(quiche::Error::Done) => 0,
                             Err(e) => {
-                                tracing::debug!("quiche client receive error: {:?}", e);
-                                0
+                                panic!("quiche client receive error: {:?}", e);
                             }
                         };
                     }
                     Ok(None) => {}
                     Err(e) => {
-                        tracing::debug!("quiche client socket recv error: {:?}", e);
+                        panic!("quiche client socket recv error: {:?}", e);
                     }
                 }
 
@@ -209,24 +209,46 @@ pub fn start_quiche_client(
                                 break;
                             }
                             Err(e) => {
-                                tracing::debug!("quiche client send error: {:?}", e);
-                                break;
+                                panic!("quiche client send error: {:?}", e)
                             }
                         };
 
-                        tracing::debug!("quiche client sending {} bytes", write);
                         active_socket
                             .send_to(send_info.to, NotEct, out[..write].to_vec())
                             .unwrap();
                     }
+                    if local_addr == migrated_socket.local_addr().unwrap()
+                        && client_conn
+                            .is_path_validated(local_addr, peer_addr)
+                            .unwrap()
+                        && !req_sent
+                    {
+                        client_conn.stream_send(0, req.as_bytes(), true).unwrap();
+                        req_sent = true;
+                    }
                 }
+
+                for stream_id in client_conn.readable() {
+                    while let Ok((read, _)) = client_conn.stream_recv(stream_id, &mut buf) {
+                        let stream_buf = &buf[..read];
+                        if stream_buf.as_bytes() == req.as_bytes() {
+                            client_conn.close(true, 0x00, b"test finished").unwrap();
+                            test_string_received = true;
+                        } else {
+                            panic!("No string recieved!");
+                        }
+                    }
+                }
+            }
+
+            if test_string_received {
+                break;
             }
 
             while let Some(qe) = client_conn.path_event_next() {
                 match qe {
                     quiche::PathEvent::Validated(local_addr, peer_addr) => {
                         client_conn.migrate(local_addr, peer_addr).unwrap();
-                        migration_complete = true;
                     }
                     _ => {}
                 }
@@ -238,10 +260,6 @@ pub fn start_quiche_client(
                     let new_addr = migrated_socket.local_addr().unwrap();
                     client_conn.probe_path(new_addr, server_addr).unwrap();
                     path_probed = true;
-                }
-
-                if migration_complete {
-                    // break;
                 }
             }
 
