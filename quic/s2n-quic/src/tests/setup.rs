@@ -188,7 +188,7 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
                     // Check connection state
                     if client_conn.is_established() {
                         tracing::debug!("quiche client connection established");
-                        break;
+                        // break;
                     }
                 }
                 Ok(None) => {
@@ -196,6 +196,26 @@ pub fn start_quiche_client(mut client_conn: quiche::Connection, socket: Socket) 
                 }
                 Err(e) => {
                     tracing::debug!("quiche client socket recv error: {:?}", e);
+                }
+            }
+
+            // Send any pending data to the server
+            // This ensures continuous communication until the handshake is complete
+            loop {
+                let (write, send_info) = match client_conn.send(&mut out) {
+                    Ok((write, send_info)) => (write, send_info),
+                    Err(quiche::Error::Done) => {
+                        break;
+                    }
+                    Err(e) => {
+                        client_conn.close(false, 0x1, b"fail").ok();
+                        break;
+                    }
+                };
+
+                tracing::debug!("quiche client sending {} bytes", write);
+                if let Err(e) = socket.send_to(send_info.to, NotEct, out[..write].to_vec()) {
+                    tracing::debug!("quiche client socket send error: {:?}", e);
                 }
             }
 
