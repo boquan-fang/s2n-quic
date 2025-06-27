@@ -154,9 +154,11 @@ pub fn start_quiche_client(
 ) -> Result {
     let mut out = [0; 1350];
     let mut buf = [0; 1350];
-    let req = "Test Migration";
+    let application_data = "Test Migration";
 
     primary::spawn(async move {
+        client_conn.timeout();
+
         // Write Initial handshake packets
         let (write, send_info) = client_conn.send(&mut out).expect("Initial send failed");
         socket
@@ -165,20 +167,24 @@ pub fn start_quiche_client(
 
         let mut path_probed = false;
         let mut req_sent = false;
-        let mut test_string_received = false;
         loop {
+            // We need to check if there is a timeout event at the beginning of
+            // each loop to make sure that the connection will close properly when
+            // the test is done.
+            client_conn.on_timeout();
+            // Quiche doesn't handle IO. So we need to handle events happen
+            // on both the original socket and the migrated socket
             let sockets = vec![&socket, &migrated_socket];
             for active_socket in sockets {
-                // Process any incoming packets
                 let local_addr = active_socket.local_addr().unwrap();
                 match active_socket.try_recv_from() {
                     Ok(Some((from, _ecn, payload))) => {
-                        // Convert payload to a mutable buffer
-                        let mut buf_copy = payload.clone();
+                        // Quiche conn.recv requires a mutable payload array
+                        let mut payload_copy = payload.clone();
 
-                        // Process the incoming packet
+                        // Feed received data from IO Socket to Quiche
                         let _read = match client_conn.recv(
-                            &mut buf_copy,
+                            &mut payload_copy,
                             quiche::RecvInfo {
                                 from,
                                 to: active_socket.local_addr().unwrap(),
@@ -217,13 +223,18 @@ pub fn start_quiche_client(
                             .send_to(send_info.to, NotEct, out[..write].to_vec())
                             .unwrap();
                     }
+
+                    // Send application data using the migrated address
+                    // This can only be done once the connection migration is completed
                     if local_addr == migrated_socket.local_addr().unwrap()
                         && client_conn
                             .is_path_validated(local_addr, peer_addr)
                             .unwrap()
                         && !req_sent
                     {
-                        client_conn.stream_send(0, req.as_bytes(), true).unwrap();
+                        client_conn
+                            .stream_send(0, application_data.as_bytes(), true)
+                            .unwrap();
                         req_sent = true;
                     }
                 }
@@ -231,9 +242,10 @@ pub fn start_quiche_client(
                 for stream_id in client_conn.readable() {
                     while let Ok((read, _)) = client_conn.stream_recv(stream_id, &mut buf) {
                         let stream_buf = &buf[..read];
-                        if stream_buf.as_bytes() == req.as_bytes() {
-                            client_conn.close(true, 0x00, b"test finished").unwrap();
-                            test_string_received = true;
+                        // The data that the Quiche client received should be the same that it sent
+                        if stream_buf.as_bytes() == application_data.as_bytes() {
+                            // The test is done once the client recieves the data. Hence, close the connection
+                            client_conn.close(false, 0x00, b"test finished").unwrap();
                         } else {
                             panic!("No string recieved!");
                         }
@@ -241,7 +253,8 @@ pub fn start_quiche_client(
                 }
             }
 
-            if test_string_received {
+            // Exit the test once the connection is closed
+            if client_conn.is_closed() {
                 break;
             }
 
@@ -254,7 +267,8 @@ pub fn start_quiche_client(
                 }
             }
 
-            // Perform connection migration after the connection is established.
+            // Perform connection migration after the connection is established
+            // and the server provides spare CIDs
             if client_conn.is_established() && client_conn.available_dcids() > 0 {
                 if !path_probed {
                     let new_addr = migrated_socket.local_addr().unwrap();
