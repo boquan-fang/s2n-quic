@@ -21,6 +21,9 @@ use zerocopy::IntoBytes;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
 
+const QUICHE_MAX_DATAGRAM_SIZE: usize = 1350;
+const QUICHE_STREAM_ID: u64 = 0;
+
 pub fn tracing_events() -> event::tracing::Subscriber {
     use std::sync::Once;
 
@@ -152,8 +155,8 @@ pub fn start_quiche_client(
     migrated_socket: Socket,
     server_addr: SocketAddr,
 ) -> Result {
-    let mut out = [0; 1350];
-    let mut buf = [0; 1350];
+    let mut out = [0; QUICHE_MAX_DATAGRAM_SIZE];
+    let mut buf = [0; QUICHE_MAX_DATAGRAM_SIZE];
     let application_data = "Test Migration";
 
     primary::spawn(async move {
@@ -233,7 +236,7 @@ pub fn start_quiche_client(
                         && !req_sent
                     {
                         client_conn
-                            .stream_send(0, application_data.as_bytes(), true)
+                            .stream_send(QUICHE_STREAM_ID, application_data.as_bytes(), true)
                             .unwrap();
                         req_sent = true;
                     }
