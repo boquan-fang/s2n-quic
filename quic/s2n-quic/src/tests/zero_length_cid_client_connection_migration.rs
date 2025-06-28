@@ -14,6 +14,8 @@ fn zero_length_cid_client_connection_migration_test() {
     // Create event subscribers to track frame received events
     let initial_cid_subscriber = recorder::ClientOriginalCID::new();
     let initial_cid_event = initial_cid_subscriber.events();
+    let path_challenge_subscriber = recorder::PathChallengeUpdated::new();
+    let path_challenge_event = path_challenge_subscriber.events();
 
     test(model, |handle| {
         // Set up a s2n-quic server
@@ -28,7 +30,10 @@ fn zero_length_cid_client_connection_migration_test() {
         let server = Server::builder()
             .with_io(handle.builder().build()?)?
             .with_tls(server)?
-            .with_event((tracing_events(), initial_cid_subscriber))?
+            .with_event((
+                tracing_events(),
+                (initial_cid_subscriber, path_challenge_subscriber),
+            ))?
             .with_random(Random::with_seed(456))?
             .with_limits(limits::Limits::new().with_max_active_connection_ids(3)?)?
             .start()?;
@@ -75,4 +80,11 @@ fn zero_length_cid_client_connection_migration_test() {
     // Verify if the client's original CID is zero-length
     let initial_cid_vec = initial_cid_event.lock().unwrap();
     assert_eq!(initial_cid_vec[0].len(), 0);
+
+    // Verify if the new path is validated
+    let path_challenge_statuses = path_challenge_event.lock().unwrap();
+    let path_validated = path_challenge_statuses
+        .iter()
+        .any(|status| matches!(status, events::PathChallengeStatus::Validated { .. }));
+    assert!(path_validated);
 }
