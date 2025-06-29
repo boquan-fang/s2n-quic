@@ -12,7 +12,7 @@ fn zero_length_cid_client_connection_migration_test() {
     let model = Model::default();
 
     // Create event subscribers to track frame received events
-    let initial_cid_subscriber = recorder::ClientOriginalCID::new();
+    let initial_cid_subscriber = recorder::InitialCryptoFrameReceived::new();
     let initial_cid_event = initial_cid_subscriber.events();
     let path_challenge_subscriber = recorder::PathChallengeUpdated::new();
     let path_challenge_event = path_challenge_subscriber.events();
@@ -77,8 +77,12 @@ fn zero_length_cid_client_connection_migration_test() {
     })
     .unwrap();
 
-    // Verify if the client's original CID is zero-length
     let initial_cid_vec = initial_cid_event.lock().unwrap();
+    // The server should only perform one handshake with a successful
+    // connection mgiration. Hence, it should only receive one Initial packet
+    // with Crypto frame
+    assert_eq!(initial_cid_vec.len(), 1);
+    // Verify if the client's original CID is zero-length
     assert_eq!(initial_cid_vec[0].len(), 0);
 
     // Verify if the new path is validated
