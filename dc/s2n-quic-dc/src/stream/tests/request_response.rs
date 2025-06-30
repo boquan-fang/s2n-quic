@@ -710,7 +710,54 @@ mod udp {
     }
 
     tests!(tokio_test);
-    tokio_fuzz_test!();
+    #[test]
+    fn fuzz_test() {
+        without_tracing(|| {
+            use std::sync::OnceLock;
+
+            let client_delays = Delays {
+                read: Duration::from_nanos(1_058_095),          // 1.058095ms
+                write: Duration::from_nanos(1_560_203),         // 1.560203ms
+                shutdown_write: Duration::from_nanos(949_615),  // 949.615µs
+                shutdown_read: Duration::from_nanos(1_532_273), // 1.532273ms
+                drop: Duration::from_nanos(1_610_570),          // 1.61057ms
+            };
+            let client = Client {
+                delays: client_delays,
+                count: 3,
+                concurrency: 2,
+                max_read_len: 29444,
+                max_mtu: Some(3153),
+            };
+
+            let server_delays = Delays {
+                read: Duration::from_nanos(569_478),             // 569.478µs
+                write: Duration::from_nanos(1_385_789),          // 1.385789ms
+                shutdown_write: Duration::from_nanos(1_391_925), // 1.391925ms
+                shutdown_read: Duration::from_nanos(746_348),    // 746.348µs
+                drop: Duration::from_nanos(800_292),             // 800.292µs
+            };
+            let server = Server {
+                delays: server_delays,
+                count: 4,
+                max_read_len: 1,
+                max_mtu: Some(2252),
+            };
+
+            let request = Request {
+                count: 5,
+                request_size: 98312,
+                response_size: 95544,
+            };
+            let mut requests = Vec::<Request>::new();
+            requests.push(request);
+
+            static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+            RUNTIME
+                .get_or_init(|| Runtime::new(&harness()))
+                .run_with(client, server, requests);
+        });
+    }
 }
 
 mod udp_sim {
