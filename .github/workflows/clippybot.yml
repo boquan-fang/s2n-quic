@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        include:
+          - toolchain: stable
+            # fail on stable warnings
+            args: "-D warnings"
+          - toolchain: beta
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,8 +29,10 @@ jobs:
       - name: Install rust toolchain
         id: toolchain
         run: |
-          rustup toolchain install beta --profile minimal --component clippy
-          rustup override set beta
+          rustup toolchain install ${{ matrix.toolchain }} --profile minimal --component clippy
+          rustup override set ${{ matrix.toolchain }}
+
+      - uses: camshaft/rust-cache@v1
 
       - name: Run cargo clippy on main crates
         run: |
@@ -33,7 +41,7 @@ jobs:
           #
           # manual_clamp will panic when min > max
           # See https://github.com/rust-lang/rust-clippy/pull/10101
-          cargo clippy ${{ env.CLIPPY_FIX_ARGS }} --all-features --all-targets --workspace -- -A clippy::derive_partial_eq_without_eq -A clippy::manual_clamp -D warnings
+          cargo clippy ${{ env.CLIPPY_FIX_ARGS }} --all-features --all-targets --workspace -- -A clippy::derive_partial_eq_without_eq -A clippy::manual_clamp ${{ matrix.args }}
 
       - name: Run clippy on dc/wireshark crate
         working-directory: dc/wireshark
@@ -41,7 +49,7 @@ jobs:
 
       - name: Run clippy on all examples crates
         working-directory: examples
-        run: cargo clippy --all-features --all-targets ${{ env.CLIPPY_FIX_ARGS }} -- -A clippy::manual_clamp -A clippy::uninlined_format_args -D warnings
+        run: cargo clippy --all-features --all-targets ${{ env.CLIPPY_FIX_ARGS }} -- -A clippy::manual_clamp -A clippy::uninlined_format_args ${{ matrix.args }}
 
       - name: Run clippy on tools/xdp crate
         working-directory: tools/xdp
