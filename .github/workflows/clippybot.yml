@@ -1,0 +1,51 @@
+name: clippybot
+
+on:
+  schedule:
+    # Run daily job at 8:00 PM PT
+    - cron: '0 3 * * *'
+
+env:
+  # Clippy should only run the fix command if it is triggered by a scheduled job
+  CLIPPY_FIX_ARGS: ${{ github.event_name == 'schedule' && '--fix --allow-dirty' || '' }}
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install rust toolchain
+        id: toolchain
+        run: |
+          rustup toolchain install beta --profile minimal --component clippy
+          rustup override set beta
+
+      - name: Run cargo clippy on main crates
+        run: |
+          # deriving Eq may break API compatibility so we disable it
+          # See https://github.com/rust-lang/rust-clippy/issues/9063
+          #
+          # manual_clamp will panic when min > max
+          # See https://github.com/rust-lang/rust-clippy/pull/10101
+          cargo clippy ${{ env.CLIPPY_FIX_ARGS }} --all-features --all-targets --workspace -- -A clippy::derive_partial_eq_without_eq -A clippy::manual_clamp -D warnings
+
+      - name: Run clippy on dc/wireshark crate
+        working-directory: dc/wireshark
+        run: cargo clippy ${{ env.CLIPPY_FIX_ARGS }} --tests
+
+      - name: Run clippy on all examples crates
+        working-directory: examples
+        run: cargo clippy --all-features --all-targets ${{ env.CLIPPY_FIX_ARGS }} -- -A clippy::manual_clamp -A clippy::uninlined_format_args -D warnings
+
+      - name: Run clippy on tools/xdp crate
+        working-directory: tools/xdp
+        run: cargo clippy ${{ env.CLIPPY_FIX_ARGS }}
+
+      - name: Create Pull Request
+        if: github.event_name == 'schedule'
+        uses: peter-evans/create-pull-request@v7
