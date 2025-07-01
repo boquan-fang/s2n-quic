@@ -57,3 +57,13 @@ jobs:
       - name: Create Pull Request
         if: github.event_name == 'schedule'
         uses: peter-evans/create-pull-request@v7
+        with:
+          branch: clippy-bot-fixes
+          title: 'chore: apply clippy fixes'
+          body: |
+            ### Description of Changes
+            Apply up to date clippy requirements.
+
+            ### Testings
+            CI Tests
+          delete-branch: true
