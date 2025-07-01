@@ -3,7 +3,7 @@ name: clippybot
 on:
   schedule:
     # Run daily job at 8:00 PM PT
-    - cron: '*/5 * * * *'
+    - cron: '* 3 * * *'
   workflow_dispatch:
 
 env:
