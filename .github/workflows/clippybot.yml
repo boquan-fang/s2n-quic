@@ -4,6 +4,7 @@ on:
   schedule:
     # Run daily job at 8:00 PM PT
     - cron: '0 3 * * *'
+  workflow_dispatch:
 
 env:
   # Clippy should only run the fix command if it is triggered by a scheduled job
