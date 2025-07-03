@@ -12,6 +12,7 @@ use crate::{
 use s2n_quic_core::{
     ack,
     connection::{self, Limits, PeerId},
+    ensure,
     event::{
         self,
         builder::{DatagramDropReason, MtuUpdatedCause},
@@ -338,6 +339,20 @@ impl<Config: endpoint::Config> Manager<Config> {
         let local_address = path_handle.local_address();
         let active_local_addr = self.active_path().local_address();
         let active_remote_addr = self.active_path().remote_address();
+        // The peer has intentionally tried to migrate to a new path because they changed
+        // their destination_connection_id. This is considered an "active" migration.
+        let active_migration =
+            self.active_path().local_connection_id != datagram.destination_connection_id;
+
+        if active_migration {
+            ensure!(limits.active_migration_enabled(), {
+                let reason = migration::DenyReason::ConnectionMigrationDisabled;
+                publisher.on_connection_migration_denied(reason.into_event());
+                Err(DatagramDropReason::RejectedConnectionMigration {
+                    reason: reason.into_event().reason,
+                })
+            })
+        }
 
         // TODO set alpn if available
         let attempt: migration::Attempt = migration::AttemptBuilder {
@@ -426,18 +441,15 @@ impl<Config: endpoint::Config> Manager<Config> {
         let cc = congestion_controller_endpoint.new_congestion_controller(path_info);
 
         let peer_connection_id = {
-            if self.active_path().local_connection_id != datagram.destination_connection_id {
+            if active_migration {
                 //= https://www.rfc-editor.org/rfc/rfc9000#section-9.5
                 //# Similarly, an endpoint MUST NOT reuse a connection ID when sending to
                 //# more than one destination address.
 
-                // The peer changed destination CIDs, so we will attempt to switch to a new
-                // destination CID as well. This could still just be a NAT rebind though, so
-                // we continue with the existing destination CID if there isn't a new one
-                // available.
+                // Active connection migrations must use a new connection ID
                 self.peer_id_registry
                     .consume_new_id_for_new_path()
-                    .unwrap_or(self.active_path().peer_connection_id)
+                    .ok_or(DatagramDropReason::InsufficientConnectionIds)?
             } else {
                 //= https://www.rfc-editor.org/rfc/rfc9000#section-9.5
                 //# Due to network changes outside
