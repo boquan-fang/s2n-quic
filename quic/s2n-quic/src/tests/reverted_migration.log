@@ -1,0 +1,122 @@
+
+running 1 test
+0:00:00.000001 s2n_quic:server: platform_event_loop_started: local_address=1.0.0.0:49152
+0:00:00.000001 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=false tx_ready=true application_wakeup=false
+0:00:00.000001 s2n_quic:server: platform_rx: count=0 syscalls=1 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:00:00.000001 s2n_quic:server: platform_event_loop_sleep: timeout=None processing_duration=1µs
+0:00:00.050000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:00:00.050000 s2n_quic:server: platform_rx: count=1 syscalls=3 blocked_syscalls=2 total_errors=0 dropped_errors=0
+0:00:00.050000 s2n_quic:server: version_information: server_versions=[1] client_versions=[] chosen_version=Some(1)
+0:00:00.050000 s2n_quic:server:conn: key_update: key_type=Initial cipher_suite=TLS_AES_128_GCM_SHA256 id=0
+0:00:00.050000 s2n_quic:server:conn: connection_started: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } id=0
+0:00:00.050000 s2n_quic:server:conn: mtu_updated: path_id=0 mtu=1200 cause=NewPath search_complete=false id=0
+0:00:00.050000 s2n_quic:server:conn: datagram_received: len=1200 id=0
+0:00:00.050000 s2n_quic:server:conn: frame_received: packet_header=Initial { number: 0, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Crypto { offset: 0, len: 208 } id=0
+0:00:00.050000 s2n_quic:server:conn: tls_client_hello: payload=[[3, 3, 126, 120, 130, 110, 206, 145, 13, 111, 27, 193, 106, 240, 38, 36, 120, 241, 202, 32, 211, 79, 196, 221, 125, 184, 155, 153, 227, 168, 73, 72, 99, 152, 0, 0, 6, 19, 1, 19, 2, 19, 3, 1, 0, 0, 157, 0, 0, 0, 14, 0, 12, 0, 0, 9, 108, 111, 99, 97, 108, 104, 111, 115, 116, 0, 10, 0, 8, 0, 6, 0, 29, 0, 23, 0, 24, 0, 16, 0, 5, 0, 3, 2, 104, 51, 0, 13, 0, 20, 0, 18, 4, 3, 8, 4, 4, 1, 5, 3, 8, 5, 5, 1, 8, 6, 6, 1, 2, 1, 0, 51, 0, 38, 0, 36, 0, 29, 0, 32, 217, 33, 213, 7, 179, 213, 0, 147, 229, 95, 213, 252, 108, 95, 190, 131, 189, 7, 120, 215, 163, 227, 103, 186, 84, 157, 143, 135, 187, 81, 232, 108, 0, 45, 0, 2, 1, 1, 0, 43, 0, 3, 2, 3, 4, 0, 57, 0, 35, 3, 4, 128, 0, 255, 247, 4, 4, 128, 152, 150, 128, 5, 4, 128, 15, 66, 64, 6, 4, 128, 15, 66, 64, 10, 1, 3, 11, 1, 25, 14, 1, 5, 15, 0]] id=0
+0:00:00.050000 s2n_quic:server:conn: key_update: key_type=Handshake cipher_suite=TLS_AES_128_GCM_SHA256 id=0
+0:00:00.050000 s2n_quic:server:conn: application_protocol_information: chosen_application_protocol=[104, 51] id=0
+0:00:00.050000 s2n_quic:server:conn: server_name_information: chosen_server_name="localhost" id=0
+0:00:00.050000 s2n_quic:server:conn: key_exchange_group: chosen_group_name="x25519" contains_kem=false id=0
+0:00:00.050000 s2n_quic:server:conn: transport_parameters_received: transport_parameters=TransportParameters { original_destination_connection_id: None, initial_source_connection_id: Some(0x), retry_source_connection_id: None, stateless_reset_token: None, preferred_address: None, migration_support: true, max_idle_timeout: 0ns, ack_delay_exponent: 3, max_ack_delay: 25ms, max_udp_payload_size: 65527, active_connection_id_limit: 5, initial_max_stream_data_bidi_local: 1000000, initial_max_stream_data_bidi_remote: 1000000, initial_max_stream_data_uni: 0, initial_max_streams_bidi: 0, initial_max_streams_uni: 0, max_datagram_frame_size: 0, dc_supported_versions: [] } id=0
+0:00:00.050000 s2n_quic:server:conn: key_update: key_type=OneRtt { generation: 0 } cipher_suite=TLS_AES_128_GCM_SHA256 id=0
+0:00:00.050000 s2n_quic:server:conn: packet_dropped: reason=DecodingFailed { path: Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } } id=0
+0:00:00.050000 s2n_quic:server:conn: frame_sent: packet_header=Initial { number: 0, version: 1 } path_id=0 frame=Ack { ecn_counts: None, largest_acknowledged: 0, ack_range_count: 1 } id=0
+0:00:00.050000 s2n_quic:server:conn: ack_range_sent: packet_header=Initial { number: 0, version: 1 } path_id=0 ack_range=0..=0 id=0
+0:00:00.050000 s2n_quic:server:conn: frame_sent: packet_header=Initial { number: 0, version: 1 } path_id=0 frame=Crypto { offset: 0, len: 90 } id=0
+0:00:00.050000 s2n_quic:server:conn: packet_sent: packet_header=Initial { number: 0, version: 1 } packet_len=142 id=0
+0:00:00.050000 s2n_quic:server:conn: frame_sent: packet_header=Handshake { number: 0, version: 1 } path_id=0 frame=Crypto { offset: 0, len: 813 } id=0
+0:00:00.050000 s2n_quic:server:conn: frame_sent: packet_header=Handshake { number: 0, version: 1 } path_id=0 frame=Padding id=0
+0:00:00.050000 s2n_quic:server:conn: packet_sent: packet_header=Handshake { number: 0, version: 1 } packet_len=1058 id=0
+0:00:00.050000 s2n_quic:server:conn: datagram_sent: len=1200 gso_offset=0 id=0
+0:00:00.050000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=333ms smoothed_rtt=333ms latest_rtt=333ms rtt_variance=166.5ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=1200 congestion_limited=false id=0
+0:00:00.050000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(999ms) processing_duration=1µs
+0:00:00.150000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:00:00.150000 s2n_quic:server: platform_tx: count=1 syscalls=1 blocked_syscalls=0 total_errors=0 dropped_errors=0
+0:00:00.150000 s2n_quic:server: platform_rx: count=1 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:00:00.150000 s2n_quic:server: version_information: server_versions=[1] client_versions=[] chosen_version=Some(1)
+0:00:00.150000 s2n_quic:server:conn: datagram_received: len=1200 id=0
+0:00:00.150000 s2n_quic:server:conn: packet_received: packet_header=Initial { number: 1, version: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: frame_received: packet_header=Initial { number: 1, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Ack { ecn_counts: None, largest_acknowledged: 0, ack_range_count: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: ack_range_received: packet_header=Initial { number: 1, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } ack_range=0..=0 id=0
+0:00:00.150000 s2n_quic:server:conn: ecn_state_changed: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } state=Failed id=0
+0:00:00.150000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=50ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=1058 congestion_limited=false id=0
+0:00:00.150000 s2n_quic:server:conn: packet_received: packet_header=Handshake { number: 2, version: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: frame_received: packet_header=Handshake { number: 2, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Ack { ecn_counts: None, largest_acknowledged: 0, ack_range_count: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: ack_range_received: packet_header=Handshake { number: 2, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } ack_range=0..=0 id=0
+0:00:00.150000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=50ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.150000 s2n_quic:server:conn: frame_received: packet_header=Handshake { number: 2, version: 1 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Crypto { offset: 0, len: 36 } id=0
+0:00:00.150000 s2n_quic:server:conn: key_space_discarded: space=Initial id=0
+0:00:00.150000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=50ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.150000 s2n_quic:server:conn: handshake_status_updated: status=Complete id=0
+0:00:00.150000 s2n_quic:server:conn: handshake_status_updated: status=Confirmed id=0
+0:00:00.150000 s2n_quic:server:conn: tls_exporter_ready: session=TlsSession { .. } id=0
+0:00:00.150000 s2n_quic:server:conn: key_space_discarded: space=Handshake id=0
+0:00:00.150000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=50ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.150000 s2n_quic:server:conn: packet_dropped: reason=DecodingFailed { path: Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } } id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 0 } path_id=0 frame=Ping id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 0 } path_id=0 frame=Padding id=0
+0:00:00.150000 s2n_quic:server:conn: packet_sent: packet_header=OneRtt { number: 0 } packet_len=1472 id=0
+0:00:00.150000 s2n_quic:server:conn: datagram_sent: len=1472 gso_offset=0 id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 1 } path_id=0 frame=HandshakeDone id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 1 } path_id=0 frame=NewConnectionId { sequence_number: 1, retire_prior_to: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 1 } path_id=0 frame=NewConnectionId { sequence_number: 2, retire_prior_to: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 1 } path_id=0 frame=NewConnectionId { sequence_number: 3, retire_prior_to: 1 } id=0
+0:00:00.150000 s2n_quic:server:conn: packet_sent: packet_header=OneRtt { number: 1 } packet_len=127 id=0
+0:00:00.150000 s2n_quic:server:conn: datagram_sent: len=127 gso_offset=0 id=0
+0:00:00.150000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=50ms max_ack_delay=25ms pto_count=0 congestion_window=12000 bytes_in_flight=1599 congestion_limited=false id=0
+0:00:00.150000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(325ms) processing_duration=1µs
+0:00:00.150000 s2n_quic::tests::setup: accepted server connection: 0
+0:00:00.250000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:00:00.250000 s2n_quic:server: platform_tx: count=2 syscalls=1 blocked_syscalls=0 total_errors=0 dropped_errors=0
+0:00:00.250000 s2n_quic:server: platform_rx: count=1 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:00:00.250000 s2n_quic:server:conn: datagram_received: len=39 id=0
+0:00:00.250000 s2n_quic:server:conn: packet_received: packet_header=OneRtt { number: 3 } id=0
+0:00:00.250000 s2n_quic:server:conn: frame_received: packet_header=OneRtt { number: 3 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Ack { ecn_counts: None, largest_acknowledged: 0, ack_range_count: 1 } id=0
+0:00:00.250000 s2n_quic:server:conn: ack_range_received: packet_header=OneRtt { number: 3 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } ack_range=0..=0 id=0
+0:00:00.250000 s2n_quic:server:conn: mtu_updated: path_id=0 mtu=1472 cause=ProbeAcknowledged search_complete=true id=0
+0:00:00.250000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x4f63ee1f05f71c01fb839a405f4a7e90, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=100ms latest_rtt=100ms rtt_variance=37.5ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=127 congestion_limited=false id=0
+0:00:00.250000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(175ms) processing_duration=1µs
+0:00:00.260000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:00:00.260000 s2n_quic:server: platform_rx: count=1 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:00:00.260000 s2n_quic:server:conn: datagram_received: len=41 id=0
+0:00:00.260000 s2n_quic:server:conn: packet_received: packet_header=OneRtt { number: 4 } id=0
+0:00:00.260000 s2n_quic:server:conn: connection_id_updated: path_id=0 cid_consumer=Remote previous=0x4f63ee1f05f71c01fb839a405f4a7e90 current=0x04f30e680feb055122999ce01e34e502 id=0
+0:00:00.260000 s2n_quic:server:conn: frame_received: packet_header=OneRtt { number: 4 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=Ack { ecn_counts: None, largest_acknowledged: 1, ack_range_count: 1 } id=0
+0:00:00.260000 s2n_quic:server:conn: ack_range_received: packet_header=OneRtt { number: 4 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } ack_range=0..=1 id=0
+0:00:00.260000 s2n_quic:server:conn: handshake_status_updated: status=HandshakeDoneAcked id=0
+0:00:00.260000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.260000 s2n_quic:server:conn: frame_received: packet_header=OneRtt { number: 4 } path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } frame=RetireConnectionId id=0
+0:00:00.260000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(25ms) processing_duration=1µs
+0:00:00.270000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:00:00.270000 s2n_quic:server: platform_rx: count=1 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:00:00.270000 s2n_quic:server:conn: datagram_dropped: local_addr=1.0.0.0:49152 remote_addr=1.0.0.2:49154 destination_cid=0x9a31e2afd000b07c8e4d00c67937def2 source_cid=None len=1200 reason=InsufficientConnectionIds id=0
+0:00:00.270000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(15ms) processing_duration=1µs
+0:00:00.285000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=true rx_ready=false tx_ready=false application_wakeup=false
+0:00:00.285000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.285000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 2 } path_id=0 frame=Ack { ecn_counts: None, largest_acknowledged: 4, ack_range_count: 1 } id=0
+0:00:00.285000 s2n_quic:server:conn: ack_range_sent: packet_header=OneRtt { number: 2 } path_id=0 ack_range=3..=4 id=0
+0:00:00.285000 s2n_quic:server:conn: frame_sent: packet_header=OneRtt { number: 2 } path_id=0 frame=Padding id=0
+0:00:00.285000 s2n_quic:server:conn: packet_sent: packet_header=OneRtt { number: 2 } packet_len=43 id=0
+0:00:00.285000 s2n_quic:server:conn: datagram_sent: len=43 gso_offset=0 id=0
+0:00:00.285000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.285000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(278.748ms) processing_duration=1µs
+0:00:00.563748 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=true rx_ready=false tx_ready=false application_wakeup=false
+0:00:00.563748 s2n_quic:server: platform_tx: count=1 syscalls=1 blocked_syscalls=0 total_errors=0 dropped_errors=0
+0:00:00.563748 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:00.563748 s2n_quic:server: platform_event_loop_sleep: timeout=Some(561.252ms) processing_duration=1µs
+0:00:01.125000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=true rx_ready=false tx_ready=false application_wakeup=false
+0:00:01.125000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:01.125000 s2n_quic:server: platform_event_loop_sleep: timeout=Some(29.135s) processing_duration=1µs
+0:00:30.260000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=true rx_ready=false tx_ready=false application_wakeup=false
+0:00:30.260000 s2n_quic:server:conn: recovery_metrics: path=Path { local_addr: 1.0.0.0:49152, local_cid: 0x04f30e680feb055122999ce01e34e502, remote_addr: 1.0.0.1:49153, remote_cid: 0x, id: 0, is_active: true } min_rtt=100ms smoothed_rtt=101.249625ms latest_rtt=110ms rtt_variance=30.62425ms max_ack_delay=25ms pto_count=0 congestion_window=14720 bytes_in_flight=0 congestion_limited=false id=0
+0:00:30.260000 s2n_quic:server:conn: connection_closed: error=IdleTimerExpired { source: Location { file: "/home/ubuntu/workspace/s2n-quic/quic/s2n-quic-transport/src/connection/connection_impl.rs", line: 1089, col: 24 } } id=0
+0:00:30.260000 s2n_quic:server: platform_event_loop_sleep: timeout=None processing_duration=1µs
+0:14:08 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:14:08 s2n_quic:server: platform_rx: count=1 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:14:08 s2n_quic:server: endpoint_datagram_dropped: len=1200 reason=UnknownDestinationConnectionId
+0:14:08 s2n_quic:server: platform_event_loop_sleep: timeout=None processing_duration=1µs
+0:42:25.980000 s2n_quic:server: platform_event_loop_wakeup: timeout_expired=false rx_ready=true tx_ready=false application_wakeup=false
+0:42:25.980000 s2n_quic:server: platform_rx: count=2 syscalls=2 blocked_syscalls=1 total_errors=0 dropped_errors=0
+0:42:25.980000 s2n_quic:server: endpoint_datagram_dropped: len=1200 reason=UnknownDestinationConnectionId
+0:42:25.980000 s2n_quic:server: endpoint_datagram_dropped: len=1200 reason=UnknownDestinationConnectionId
+0:42:25.980000 s2n_quic:server: platform_event_loop_sleep: timeout=None processing_duration=1µs
