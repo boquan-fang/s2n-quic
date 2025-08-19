@@ -138,10 +138,10 @@ macro_rules! check_pair_addrs {
 
 macro_rules! dcquic_context {
     ($protocol:ident) => {
+        use super::Protocol;
         use std::net::SocketAddr;
-        use stream::socket::Protocol;
 
-        pub use super::Stream;
+        pub type Stream = crate::stream::application::Stream<NoopSubscriber>;
 
         pub struct Context(super::Context);
 
@@ -180,6 +180,56 @@ macro_rules! dcquic_context {
             }
         }
     };
+}
+
+pub mod tcp {
+    use super::Protocol;
+    use std::net::SocketAddr;
+    use tokio::net::{TcpListener, TcpStream};
+
+    pub type Stream = TcpStream;
+
+    pub struct Context {
+        acceptor: TcpListener,
+    }
+
+    impl Context {
+        pub async fn new() -> Self {
+            Self::bind("127.0.0.1:0".parse().unwrap()).await
+        }
+
+        pub async fn bind(addr: SocketAddr) -> Self {
+            let acceptor = TcpListener::bind(addr).await.expect("bind");
+            Self { acceptor }
+        }
+
+        pub fn acceptor_addr(&self) -> SocketAddr {
+            self.acceptor.local_addr().expect("acceptor_addr")
+        }
+
+        pub async fn pair(&self) -> (Stream, Stream) {
+            self.pair_with(self.acceptor_addr()).await
+        }
+
+        pub async fn pair_with(&self, acceptor_addr: SocketAddr) -> (Stream, Stream) {
+            let (client, server) = tokio::join!(
+                async move { Stream::connect(acceptor_addr).await.expect("connect") },
+                async move {
+                    let (conn, _addr) = self.acceptor.accept().await.expect("accept");
+                    conn
+                }
+            );
+
+            check_pair_addrs!(client, server);
+            check_pair_addrs!(server, client);
+
+            (client, server)
+        }
+
+        pub fn protocol(&self) -> Protocol {
+            Protocol::Tcp
+        }
+    }
 }
 
 #[derive(Clone)]
