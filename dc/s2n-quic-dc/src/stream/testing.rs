@@ -54,24 +54,6 @@ pub(crate) const MAX_DATAGRAM_SIZE: u16 = if cfg!(target_os = "linux") {
 
 type Env = Either<tokio::Environment<Subscriber>, bach::Environment<Subscriber>>;
 
-#[derive(Clone)]
-pub struct NoopSubscriber;
-
-impl crate::event::Subscriber for NoopSubscriber {
-    /// The context type associated with each connection
-    /// For a no-op subscriber, we can use the unit type since we don't need to store any state
-    type ConnectionContext = ();
-
-    /// Creates a context to be passed to each connection-related event
-    fn create_connection_context(
-        &self,
-        _meta: &crate::event::api::ConnectionMeta,
-        _info: &crate::event::api::ConnectionInfo,
-    ) -> Self::ConnectionContext {
-        ()
-    }
-}
-
 pub(crate) fn query_event(_connection: &mut Connection, _limiter_duration: Duration) {}
 
 impl stream_client::tokio::Handshake for ClientProvider {
