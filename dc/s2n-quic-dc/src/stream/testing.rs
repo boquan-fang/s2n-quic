@@ -14,12 +14,10 @@ use crate::{
         server::{self as stream_server, accept, stats},
         socket::Protocol,
     },
+    testing::NoopSubscriber,
 };
 use s2n_quic::Connection;
-use s2n_quic_core::{
-    crypto::tls::testing::certificates,
-    dc::{self, ApplicationParams},
-};
+use s2n_quic_core::dc::{self, ApplicationParams};
 use s2n_quic_platform::socket;
 use std::{
     cell::RefCell,

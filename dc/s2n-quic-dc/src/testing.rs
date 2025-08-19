@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{
+    event::{self, Subscriber},
     path::secret::{stateless_reset::Signer, Map},
     psk::{client, server},
 };
-use s2n_quic::provider::tls::Provider;
-use s2n_quic_core::{crypto::tls::testing::certificates, event::Subscriber, time::StdClock};
+use s2n_quic::{provider::tls::Provider, Connection};
+use s2n_quic_core::{crypto::tls::testing::certificates, time::StdClock};
 use std::{sync::OnceLock, time::Duration};
 
 pub use bach::{ext, rand};
@@ -153,10 +154,27 @@ pub fn sim(f: impl FnOnce()) {
     rt.run(f);
 }
 
+pub(crate) fn query_event(_connection: &mut Connection, _limiter_duration: Duration) {}
+
 #[derive(Clone, Default)]
 pub struct NoopSubscriber;
 
 impl Subscriber for NoopSubscriber {
+    /// The context type associated with each connection
+    /// For a no-op subscriber, we can use the unit type since we don't need to store any state
+    type ConnectionContext = ();
+
+    /// Creates a context to be passed to each connection-related event
+    fn create_connection_context(
+        &self,
+        _meta: &event::api::ConnectionMeta,
+        _info: &event::api::ConnectionInfo,
+    ) -> Self::ConnectionContext {
+        ()
+    }
+}
+
+impl s2n_quic_core::event::Subscriber for NoopSubscriber {
     /// The context type associated with each connection
     /// For a no-op subscriber, we can use the unit type since we don't need to store any state
     type ConnectionContext = ();
@@ -227,8 +245,6 @@ impl Pair {
         let tls_materials_provider = TestTlsProvider {};
         let test_event_subscriber = NoopSubscriber {};
 
-        // Set up default map for tests
-
         let server = self
             .server()
             .start(
@@ -239,24 +255,72 @@ impl Pair {
                     Signer::new(b"default"),
                     500_00,
                     StdClock::default(),
-                    (
-                        test_event_subscriber.clone(),
-                        crate::event::disabled::Subscriber::default(),
-                    ),
+                    test_event_subscriber.clone(),
                 ),
             )
             .await
             .unwrap();
 
-        // let client = self
-        //     .client()
-        //     .start(
-        //         "[::]:0".parse().unwrap(),
-        //         handshake::Map::new(tls_materials_provider),
-        //     )
-        //     .unwrap();
+        let client = self
+            .client()
+            .start(
+                "[::1]:0".parse().unwrap(),
+                Map::new(
+                    Signer::new(b"default"),
+                    500_00,
+                    StdClock::default(),
+                    test_event_subscriber.clone(),
+                ),
+                tls_materials_provider,
+                test_event_subscriber,
+                query_event,
+            )
+            .unwrap();
 
-        // (client, server)
-        server
+        (client, server)
     }
+
+    pub fn build_sync(self) -> (client::Provider, server::Provider) {
+        init_tracing();
+
+        let tls_materials_provider = TestTlsProvider {};
+        let test_event_subscriber = NoopSubscriber {};
+
+        let server = self
+            .server()
+            .start_blocking(
+                "[::1]:0".parse().unwrap(),
+                tls_materials_provider.clone(),
+                test_event_subscriber.clone(),
+                Map::new(
+                    Signer::new(b"default"),
+                    500_00,
+                    StdClock::default(),
+                    test_event_subscriber.clone(),
+                ),
+            )
+            .unwrap();
+
+        let client = self
+            .client()
+            .start(
+                "[::1]:0".parse().unwrap(),
+                Map::new(
+                    Signer::new(b"default"),
+                    500_00,
+                    StdClock::default(),
+                    test_event_subscriber.clone(),
+                ),
+                tls_materials_provider,
+                test_event_subscriber,
+                query_event,
+            )
+            .unwrap();
+
+        (client, server)
+    }
+}
+
+pub fn pair_sync() -> (client::Provider, server::Provider) {
+    Pair::default().build_sync()
 }
