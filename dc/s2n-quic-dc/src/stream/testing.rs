@@ -1,10 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use super::{client::tokio::Client as ClientTokio, server::tokio::Server as ServerTokio};
 use crate::{
     either::Either,
     event::{self, testing},
     path::secret,
+    psk::{client::Provider as ClientProvider, server::Provider as ServerProvider},
     stream::{
         application, client as stream_client,
         environment::{bach, tokio, udp, Environment},
@@ -13,7 +15,11 @@ use crate::{
         socket::Protocol,
     },
 };
-use s2n_quic_core::dc::{self, ApplicationParams};
+use s2n_quic::Connection;
+use s2n_quic_core::{
+    crypto::tls::testing::certificates,
+    dc::{self, ApplicationParams},
+};
 use s2n_quic_platform::socket;
 use std::{
     cell::RefCell,
@@ -21,6 +27,7 @@ use std::{
     io,
     net::{IpAddr, SocketAddr},
     sync::Arc,
+    time::Duration,
 };
 use tracing::Instrument;
 
@@ -46,6 +53,134 @@ pub(crate) const MAX_DATAGRAM_SIZE: u16 = if cfg!(target_os = "linux") {
 };
 
 type Env = Either<tokio::Environment<Subscriber>, bach::Environment<Subscriber>>;
+
+#[derive(Clone)]
+pub struct NoopSubscriber;
+
+impl crate::event::Subscriber for NoopSubscriber {
+    /// The context type associated with each connection
+    /// For a no-op subscriber, we can use the unit type since we don't need to store any state
+    type ConnectionContext = ();
+
+    /// Creates a context to be passed to each connection-related event
+    fn create_connection_context(
+        &self,
+        _meta: &crate::event::api::ConnectionMeta,
+        _info: &crate::event::api::ConnectionInfo,
+    ) -> Self::ConnectionContext {
+        ()
+    }
+}
+
+pub(crate) fn query_event(_connection: &mut Connection, _limiter_duration: Duration) {}
+
+impl stream_client::tokio::Handshake for ClientProvider {
+    async fn handshake_with_entry(
+        &self,
+        remote_handshake_addr: SocketAddr,
+    ) -> std::io::Result<(secret::map::Peer, secret::HandshakeKind)> {
+        self.handshake_with_entry(remote_handshake_addr, query_event)
+            .await
+    }
+
+    fn local_addr(&self) -> std::io::Result<SocketAddr> {
+        self.local_addr()
+    }
+
+    fn map(&self) -> &secret::Map {
+        self.map()
+    }
+}
+
+impl stream_server::tokio::Handshake for ServerProvider {
+    fn local_addr(&self) -> SocketAddr {
+        self.local_addr()
+    }
+
+    fn map(&self) -> &secret::Map {
+        self.map()
+    }
+}
+
+pub fn bind_pair(
+    protocol: Protocol,
+    server_addr: SocketAddr,
+    client: ClientProvider,
+    server: ServerProvider,
+) -> (
+    ClientTokio<ClientProvider, NoopSubscriber>,
+    ServerTokio<ServerProvider, NoopSubscriber>,
+) {
+    let test_subscriber = NoopSubscriber {};
+    let client = ClientTokio::<ClientProvider, NoopSubscriber>::builder()
+        .with_default_protocol(protocol)
+        .build(client, test_subscriber.clone())
+        .unwrap();
+
+    let server = ServerTokio::<ServerProvider, NoopSubscriber>::builder()
+        .with_address(server_addr)
+        .with_protocol(protocol)
+        .with_workers(1.try_into().unwrap())
+        .build(server, test_subscriber)
+        .unwrap();
+
+    (client, server)
+}
+
+macro_rules! check_pair_addrs {
+    ($local:ident, $peer:ident) => {
+        debug_assert_eq!(
+            $local.local_addr().ok().map(|addr| addr.port()),
+            $peer.peer_addr().ok().map(|addr| addr.port())
+        );
+    };
+}
+
+macro_rules! dcquic_context {
+    ($protocol:ident) => {
+        use std::net::SocketAddr;
+        use stream::socket::Protocol;
+
+        pub use super::Stream;
+
+        pub struct Context(super::Context);
+
+        #[allow(dead_code)]
+        impl Context {
+            pub async fn new() -> Self {
+                Self(super::Context::new(Protocol::$protocol).await)
+            }
+
+            pub fn new_sync(addr: SocketAddr) -> Self {
+                Self(super::Context::new_sync(Protocol::$protocol, addr))
+            }
+
+            pub async fn bind(addr: SocketAddr) -> Self {
+                Self(super::Context::bind(Protocol::$protocol, addr).await)
+            }
+
+            pub fn acceptor_addr(&self) -> SocketAddr {
+                self.0.acceptor_addr()
+            }
+
+            pub fn handshake_addr(&self) -> SocketAddr {
+                self.0.handshake_addr()
+            }
+
+            pub async fn pair(&self) -> (Stream, Stream) {
+                self.0.pair().await
+            }
+
+            pub async fn pair_with(&self, acceptor_addr: SocketAddr) -> (Stream, Stream) {
+                self.0.pair_with(acceptor_addr).await
+            }
+
+            pub fn protocol(&self) -> Protocol {
+                self.0.protocol
+            }
+        }
+    };
+}
 
 #[derive(Clone)]
 pub struct Client {

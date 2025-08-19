@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod accept_queue;
+mod behavior;
 mod deterministic;
 mod idle_timeout;
 mod key_update;
