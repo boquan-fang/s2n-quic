@@ -7,4 +7,5 @@ mod deterministic;
 mod idle_timeout;
 mod key_update;
 mod request_response;
+mod restart;
 mod rpc;
