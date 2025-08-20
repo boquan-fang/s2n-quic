@@ -121,7 +121,7 @@ macro_rules! dcquic_context {
         use super::Protocol;
         use std::net::SocketAddr;
 
-        pub type Stream = crate::stream::application::Stream<NoopSubscriber>;
+        pub type Stream = crate::stream::application::Stream<super::NoopSubscriber>;
 
         pub struct Context(super::Context);
 
@@ -160,6 +160,133 @@ macro_rules! dcquic_context {
             }
         }
     };
+}
+
+pub mod dcquic {
+    use crate::{
+        psk::{client::Provider as ClientProvider, server::Provider as ServerProvider},
+        stream::{
+            client::tokio::Client as ClientTokio,
+            server::tokio::Server as ServerTokio,
+            socket::Protocol,
+            testing::{bind_pair, NoopSubscriber},
+        },
+    };
+    use std::net::SocketAddr;
+
+    pub type Stream = crate::stream::application::Stream<NoopSubscriber>;
+
+    pub mod tcp {
+        dcquic_context!(Tcp);
+    }
+
+    pub mod udp {
+        dcquic_context!(Udp);
+    }
+
+    pub struct Context {
+        pub(crate) server: ServerTokio<ServerProvider, NoopSubscriber>,
+        pub(crate) client: ClientTokio<ClientProvider, NoopSubscriber>,
+        protocol: Protocol,
+    }
+
+    impl Context {
+        pub async fn new(protocol: Protocol) -> Self {
+            if protocol.is_udp() {
+                Self::bind(protocol, "[::1]:0".parse().unwrap()).await
+            } else {
+                Self::bind(protocol, "127.0.0.1:0".parse().unwrap()).await
+            }
+        }
+
+        pub fn new_sync(protocol: Protocol, addr: SocketAddr) -> Self {
+            let (client, server) = crate::testing::pair_sync();
+            let (client, server) = bind_pair(protocol, addr, client, server);
+            Self {
+                client,
+                server,
+                protocol,
+            }
+        }
+
+        pub async fn bind(protocol: Protocol, addr: SocketAddr) -> Self {
+            Self::bind_with(protocol, addr, crate::testing::Pair::default()).await
+        }
+
+        pub async fn bind_with(
+            protocol: Protocol,
+            addr: SocketAddr,
+            pair: crate::testing::Pair,
+        ) -> Self {
+            let (client, server) = pair.build().await;
+            let (client, server) = bind_pair(protocol, addr, client, server);
+            Self {
+                client,
+                server,
+                protocol,
+            }
+        }
+
+        pub fn acceptor_addr(&self) -> SocketAddr {
+            self.server.acceptor_addr().expect("acceptor_addr")
+        }
+
+        pub fn handshake_addr(&self) -> SocketAddr {
+            self.server.handshake_addr().expect("handshake_addr")
+        }
+
+        pub async fn pair(&self) -> (Stream, Stream) {
+            self.pair_with(self.acceptor_addr()).await
+        }
+
+        pub async fn pair_with(&self, acceptor_addr: SocketAddr) -> (Stream, Stream) {
+            let handshake_addr = self.handshake_addr();
+            let (client, server) = tokio::join!(
+                async move {
+                    self.client
+                        .connect(handshake_addr, acceptor_addr)
+                        .await
+                        .expect("connect")
+                },
+                async move {
+                    let (conn, _) = self.server.accept().await.expect("accept");
+                    conn
+                }
+            );
+
+            check_pair_addrs!(client, server);
+
+            // the client doesn't have a response from the server so it might not know its
+            // port yet
+            if self.protocol().is_udp() {
+                let acceptor_port = acceptor_addr.port();
+                let server_local_port = server.local_addr().unwrap().port();
+                let client_peer_port = client.peer_addr().unwrap().port();
+                assert!(
+                    [acceptor_port, server_local_port].contains(&client_peer_port),
+                    "acceptor_port={acceptor_port}, server_local_port={server_local_port}, client_peer_port={client_peer_port}"
+                );
+            } else {
+                check_pair_addrs!(server, client);
+            }
+
+            (client, server)
+        }
+
+        pub fn protocol(&self) -> Protocol {
+            self.protocol
+        }
+
+        #[allow(dead_code)]
+        pub fn split(
+            self,
+        ) -> (
+            ClientTokio<ClientProvider, NoopSubscriber>,
+            ServerTokio<ServerProvider, NoopSubscriber>,
+        ) {
+            (self.client, self.server)
+        }
+    }
 }
 
 pub mod tcp {
