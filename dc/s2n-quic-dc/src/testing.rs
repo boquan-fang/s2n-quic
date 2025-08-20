@@ -264,7 +264,7 @@ impl Pair {
         let client = self
             .client()
             .start(
-                "[::1]:0".parse().unwrap(),
+                "[::]:0".parse().unwrap(),
                 Map::new(
                     Signer::new(b"default"),
                     500_00,
