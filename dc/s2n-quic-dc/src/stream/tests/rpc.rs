@@ -3,8 +3,9 @@
 
 use crate::{
     stream::{
-        client::rpc,
-        testing::{Client, Server},
+        client::rpc::{self, InMemoryResponse},
+        testing::{dcquic::Context, Client, Server},
+        Protocol,
     },
     testing::{ext::*, sim, without_tracing},
 };
