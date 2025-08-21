@@ -12,6 +12,8 @@ use std::{sync::OnceLock, time::Duration};
 
 pub use bach::{ext, rand};
 
+use s2n_quic::provider::tls::s2n_tls as s2n_quic_tls_prov;
+
 pub mod task {
     pub use bach::task::*;
     pub use tokio::task::yield_now;
@@ -199,6 +201,7 @@ impl Provider for TestTlsProvider {
 
     fn start_server(self) -> Result<Self::Server, Self::Error> {
         let server = s2n_quic::provider::tls::default::Server::builder()
+            .with_application_protocols(["h3"].iter())?
             .with_certificate(certificates::CERT_PEM, certificates::KEY_PEM)?
             .build()?;
         Ok(server)
@@ -206,6 +209,7 @@ impl Provider for TestTlsProvider {
 
     fn start_client(self) -> Result<Self::Client, Self::Error> {
         let client = s2n_quic::provider::tls::default::Client::builder()
+            .with_application_protocols(["h3"].iter())?
             .with_certificate(certificates::CERT_PEM)?
             .build()?;
         Ok(client)
