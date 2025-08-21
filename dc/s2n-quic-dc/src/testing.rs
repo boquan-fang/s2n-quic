@@ -195,12 +195,12 @@ impl s2n_quic_core::event::Subscriber for NoopSubscriber {
 pub struct TestTlsProvider {}
 
 impl Provider for TestTlsProvider {
-    type Server = s2n_quic::provider::tls::default::Server;
-    type Client = s2n_quic::provider::tls::default::Client;
+    type Server = s2n_quic_tls_prov::Server;
+    type Client = s2n_quic_tls_prov::Client;
     type Error = Box<dyn std::error::Error + Send + Sync>;
 
     fn start_server(self) -> Result<Self::Server, Self::Error> {
-        let server = s2n_quic::provider::tls::default::Server::builder()
+        let server = s2n_quic_tls_prov::Server::builder()
             .with_application_protocols(["h3"].iter())?
             .with_certificate(certificates::CERT_PEM, certificates::KEY_PEM)?
             .build()?;
@@ -208,7 +208,7 @@ impl Provider for TestTlsProvider {
     }
 
     fn start_client(self) -> Result<Self::Client, Self::Error> {
-        let client = s2n_quic::provider::tls::default::Client::builder()
+        let client = s2n_quic_tls_prov::Client::builder()
             .with_application_protocols(["h3"].iter())?
             .with_certificate(certificates::CERT_PEM)?
             .build()?;
@@ -308,7 +308,7 @@ impl Pair {
         let client = self
             .client()
             .start(
-                "[::1]:0".parse().unwrap(),
+                "[::]:0".parse().unwrap(),
                 Map::new(
                     Signer::new(b"default"),
                     500_00,
