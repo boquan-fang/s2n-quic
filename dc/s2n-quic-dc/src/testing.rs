@@ -14,6 +14,8 @@ pub use bach::{ext, rand};
 
 use s2n_quic::provider::tls::s2n_tls as s2n_quic_tls_prov;
 
+pub(crate) const SNI: &str = "localhost";
+
 pub mod task {
     pub use bach::task::*;
     pub use tokio::task::yield_now;
@@ -278,6 +280,7 @@ impl Pair {
                 tls_materials_provider,
                 test_event_subscriber,
                 query_event,
+                SNI.to_string(),
             )
             .unwrap();
 
@@ -318,6 +321,7 @@ impl Pair {
                 tls_materials_provider,
                 test_event_subscriber,
                 query_event,
+                SNI.to_string(),
             )
             .unwrap();
 

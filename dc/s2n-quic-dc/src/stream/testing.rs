@@ -14,7 +14,7 @@ use crate::{
         server::{self as stream_server, accept, stats},
         socket::Protocol,
     },
-    testing::NoopSubscriber,
+    testing::{NoopSubscriber, SNI},
 };
 use s2n_quic::Connection;
 use s2n_quic_core::dc::{self, ApplicationParams};
@@ -59,7 +59,7 @@ impl stream_client::tokio::Handshake for ClientProvider {
         &self,
         remote_handshake_addr: SocketAddr,
     ) -> std::io::Result<(secret::map::Peer, secret::HandshakeKind)> {
-        self.handshake_with_entry(remote_handshake_addr, query_event)
+        self.handshake_with_entry(remote_handshake_addr, query_event, SNI.to_string())
             .await
     }
 
