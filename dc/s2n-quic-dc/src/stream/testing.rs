@@ -10,7 +10,6 @@ use crate::{
     stream::{
         application, client as stream_client,
         environment::{bach, tokio, udp, Environment},
-        recv, send,
         server::{self as stream_server, accept, stats},
         socket::Protocol,
     },
@@ -36,8 +35,6 @@ thread_local! {
 pub type Subscriber = (Arc<event::testing::Subscriber>, event::tracing::Subscriber);
 
 pub type Stream = application::Stream<Subscriber>;
-pub type Writer = send::application::Writer<Subscriber>;
-pub type Reader = recv::application::Reader<Subscriber>;
 
 const DEFAULT_POOLED: bool = true;
 

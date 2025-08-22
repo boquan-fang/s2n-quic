@@ -198,9 +198,9 @@ impl StreamExt for testing::tcp::Stream {
     }
 }
 
-impl StreamExt for crate::stream::testing::Stream {
-    type Reader = crate::stream::testing::Reader;
-    type Writer = crate::stream::testing::Writer;
+impl StreamExt for crate::stream::application::Stream<crate::testing::NoopSubscriber> {
+    type Reader = crate::stream::recv::application::Reader<crate::testing::NoopSubscriber>;
+    type Writer = crate::stream::send::application::Writer<crate::testing::NoopSubscriber>;
 
     fn into_ops(self) -> Split<Self::Reader, Self::Writer> {
         let (reader, writer) = self.into_split();
