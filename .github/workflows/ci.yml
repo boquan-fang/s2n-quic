@@ -34,6 +34,8 @@ env:
 permissions:
   statuses: write
   id-token: write # This is required for requesting the JWT/OIDC
+  contents: write
+  pull-requests: write
 
 jobs:
   env:
@@ -107,13 +109,8 @@ jobs:
             CLIPPY_FIX_FLAG='--fix --allow-dirty'
           fi
 
-          WORKSPACES=$(echo '${{ needs.env.outputs.workspaces }}' | jq -r '.[]')
-          for workspace in $WORKSPACES; do
-            echo "Running clippy on $workspace"
-            cd "$workspace"
-            cargo clippy --all-features --all-targets --workspace $CLIPPY_FIX_FLAG -- -D warnings
-            cd $GITHUB_WORKSPACE
-          done
+          cargo clippy --all-features --all-targets --workspace $CLIPPY_FIX_FLAG -- -D warnings
+
 
       - name: Create clippy pull request
         if: github.event_name == 'workflow_dispatch'
