@@ -4,7 +4,7 @@
 use s2n_quic::{
     client::Connect,
     provider::{
-        event,
+        event::{self, events},
         io::testing::{primary, spawn, Handle, Result},
     },
     stream::PeerStream,
@@ -21,7 +21,43 @@ mod tests;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
 
-pub fn tracing_events() -> event::tracing::Subscriber {
+/// A subscriber that panics when a blacklisted event is encountered
+#[derive(Clone, Default)]
+pub struct TestBlacklistSubscriber;
+
+impl events::Subscriber for TestBlacklistSubscriber {
+    type ConnectionContext = ();
+
+    fn create_connection_context(
+        &mut self,
+        _meta: &events::ConnectionMeta,
+        _info: &events::ConnectionInfo,
+    ) -> Self::ConnectionContext {
+        ()
+    }
+
+    fn on_handshake_status_updated(
+        &mut self,
+        _context: &mut Self::ConnectionContext,
+        _meta: &events::ConnectionMeta,
+        event: &events::HandshakeStatusUpdated,
+    ) {
+        if matches!(
+            event,
+            events::HandshakeStatusUpdated {
+                status: events::HandshakeStatus::Confirmed { .. },
+                ..
+            }
+        ) {
+            panic!(
+                "Handshake status updated event encountered: {:?}",
+                event.status
+            );
+        }
+    }
+}
+
+pub fn tracing_events() -> impl events::Subscriber {
     use std::sync::Once;
 
     static TRACING: Once = Once::new();
@@ -59,7 +95,10 @@ pub fn tracing_events() -> event::tracing::Subscriber {
             .init();
     });
 
-    event::tracing::Subscriber::default()
+    (
+        event::tracing::Subscriber::default(),
+        TestBlacklistSubscriber,
+    )
 }
 
 pub fn start_server(mut server: Server) -> Result<SocketAddr> {
