@@ -29,7 +29,7 @@ pub(crate) enum BlacklistedEvent {
 
 /// A subscriber that panics when a blacklisted event is encountered
 #[derive(Clone, Default)]
-pub struct TestBlacklistSubscriber {
+pub(crate) struct TestBlacklistSubscriber {
     blacklist: HashSet<BlacklistedEvent>,
 }
 
@@ -39,6 +39,12 @@ impl TestBlacklistSubscriber {
         let mut blacklist = HashSet::new();
         // Add default blacklisted events
         blacklist.insert(BlacklistedEvent::HandshakeStatusUpdated);
+        Self { blacklist }
+    }
+
+    /// Creates a new TestBlacklistSubscriber with the specified blacklisted events
+    pub(crate) fn with_blacklist(events: &[BlacklistedEvent]) -> Self {
+        let blacklist = events.iter().copied().collect();
         Self { blacklist }
     }
 
@@ -89,7 +95,9 @@ impl events::Subscriber for TestBlacklistSubscriber {
     }
 }
 
-pub fn tracing_events() -> impl events::Subscriber {
+pub fn tracing_events(
+    black_list_subscriber: Option<TestBlacklistSubscriber>,
+) -> impl events::Subscriber {
     use std::sync::Once;
 
     static TRACING: Once = Once::new();
@@ -129,7 +137,7 @@ pub fn tracing_events() -> impl events::Subscriber {
 
     (
         event::tracing::Subscriber::default(),
-        TestBlacklistSubscriber::new(),
+        black_list_subscriber.unwrap_or(TestBlacklistSubscriber::new()),
     )
 }
 
