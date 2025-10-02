@@ -24,7 +24,7 @@ pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::K
 /// Enum of event types that can be blacklisted
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BlacklistedEvent {
-    HandshakeStatusUpdated,
+    PacketDropped,
 }
 
 /// A subscriber that panics when a blacklisted event is encountered
@@ -38,7 +38,7 @@ impl TestBlacklistSubscriber {
     pub fn new() -> Self {
         let mut blacklist = HashSet::new();
         // Add default blacklisted events
-        blacklist.insert(BlacklistedEvent::HandshakeStatusUpdated);
+        blacklist.insert(BlacklistedEvent::PacketDropped);
         Self { blacklist }
     }
 
@@ -80,24 +80,21 @@ impl events::Subscriber for TestBlacklistSubscriber {
         ()
     }
 
-    fn on_handshake_status_updated(
+    fn on_packet_dropped(
         &mut self,
         _context: &mut Self::ConnectionContext,
         _meta: &events::ConnectionMeta,
-        event: &events::HandshakeStatusUpdated,
+        event: &events::PacketDropped,
     ) {
-        if self.is_blacklisted(BlacklistedEvent::HandshakeStatusUpdated) {
+        if self.is_blacklisted(BlacklistedEvent::PacketDropped) {
             if matches!(
                 event,
-                events::HandshakeStatusUpdated {
-                    status: events::HandshakeStatus::Confirmed { .. },
+                events::PacketDropped {
+                    reason: events::PacketDropReason::DecryptionFailed { .. },
                     ..
                 }
             ) {
-                panic!(
-                    "Blacklisted handshake status updated event encountered: {:?}",
-                    event.status
-                );
+                panic!("PacketDropped event detected: {:?}", event);
             }
         }
     }
