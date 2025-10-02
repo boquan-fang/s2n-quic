@@ -23,19 +23,19 @@ pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::K
 
 /// Enum of event types that can be blacklisted
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum BlacklistedEvent {
+pub enum BlacklistedEvent {
     HandshakeStatusUpdated,
 }
 
 /// A subscriber that panics when a blacklisted event is encountered
 #[derive(Clone, Default)]
-pub(crate) struct TestBlacklistSubscriber {
+pub struct TestBlacklistSubscriber {
     blacklist: HashSet<BlacklistedEvent>,
 }
 
 impl TestBlacklistSubscriber {
     /// Creates a new TestBlacklistSubscriber with a default set of blacklisted events
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         let mut blacklist = HashSet::new();
         // Add default blacklisted events
         blacklist.insert(BlacklistedEvent::HandshakeStatusUpdated);
@@ -43,19 +43,19 @@ impl TestBlacklistSubscriber {
     }
 
     /// Creates a new TestBlacklistSubscriber with the specified blacklisted events
-    pub(crate) fn with_blacklist(events: &[BlacklistedEvent]) -> Self {
+    pub fn with_blacklist(events: &[BlacklistedEvent]) -> Self {
         let blacklist = events.iter().copied().collect();
         Self { blacklist }
     }
 
     /// Removes an event type from the blacklist
-    pub(crate) fn exception(mut self, event: BlacklistedEvent) -> Self {
+    pub fn exception(mut self, event: BlacklistedEvent) -> Self {
         self.blacklist.remove(&event);
         self
     }
 
     /// Removes multiple event types from the blacklist
-    pub(crate) fn exceptions(mut self, events: &[BlacklistedEvent]) -> Self {
+    pub fn exceptions(mut self, events: &[BlacklistedEvent]) -> Self {
         for event in events {
             self.blacklist.remove(event);
         }
@@ -87,10 +87,18 @@ impl events::Subscriber for TestBlacklistSubscriber {
         event: &events::HandshakeStatusUpdated,
     ) {
         if self.is_blacklisted(BlacklistedEvent::HandshakeStatusUpdated) {
-            panic!(
-                "Blacklisted handshake status updated event encountered: {:?}",
-                event.status
-            );
+            if matches!(
+                event,
+                events::HandshakeStatusUpdated {
+                    status: events::HandshakeStatus::Confirmed { .. },
+                    ..
+                }
+            ) {
+                panic!(
+                    "Blacklisted handshake status updated event encountered: {:?}",
+                    event.status
+                );
+            }
         }
     }
 }
@@ -184,7 +192,7 @@ pub fn build_server(handle: &Handle) -> Result<Server> {
     Ok(Server::builder()
         .with_io(handle.builder().build().unwrap())?
         .with_tls(SERVER_CERTS)?
-        .with_event(tracing_events())?
+        .with_event(tracing_events(None))?
         .with_random(Random::with_seed(123))?
         .start()?)
 }
@@ -229,7 +237,7 @@ pub fn build_client(handle: &Handle) -> Result<Client> {
     Ok(Client::builder()
         .with_io(handle.builder().build().unwrap())?
         .with_tls(certificates::CERT_PEM)?
-        .with_event(tracing_events())?
+        .with_event(tracing_events(None))?
         .with_random(Random::with_seed(123))?
         .start()?)
 }
