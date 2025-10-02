@@ -13,7 +13,7 @@ use s2n_quic::{
 use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
 
 use rand::{Rng, RngCore};
-use std::net::SocketAddr;
+use std::{collections::HashSet, fmt::Debug, net::SocketAddr};
 
 pub mod recorder;
 #[cfg(test)]
@@ -21,10 +21,48 @@ mod tests;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
 
+/// Enum of event types that can be blacklisted
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) enum BlacklistedEvent {
+    HandshakeStatusUpdated,
+}
+
 /// A subscriber that panics when a blacklisted event is encountered
 #[derive(Clone, Default)]
-pub struct TestBlacklistSubscriber;
+pub struct TestBlacklistSubscriber {
+    blacklist: HashSet<BlacklistedEvent>,
+}
 
+impl TestBlacklistSubscriber {
+    /// Creates a new TestBlacklistSubscriber with a default set of blacklisted events
+    pub(crate) fn new() -> Self {
+        let mut blacklist = HashSet::new();
+        // Add default blacklisted events
+        blacklist.insert(BlacklistedEvent::HandshakeStatusUpdated);
+        Self { blacklist }
+    }
+
+    /// Removes an event type from the blacklist
+    pub(crate) fn exception(mut self, event: BlacklistedEvent) -> Self {
+        self.blacklist.remove(&event);
+        self
+    }
+
+    /// Removes multiple event types from the blacklist
+    pub(crate) fn exceptions(mut self, events: &[BlacklistedEvent]) -> Self {
+        for event in events {
+            self.blacklist.remove(event);
+        }
+        self
+    }
+
+    /// Checks if the given event type is blacklisted
+    fn is_blacklisted(&self, event: BlacklistedEvent) -> bool {
+        self.blacklist.contains(&event)
+    }
+}
+
+/// Implement other on_* methods as needed for events you want to blacklist
 impl events::Subscriber for TestBlacklistSubscriber {
     type ConnectionContext = ();
 
@@ -42,15 +80,9 @@ impl events::Subscriber for TestBlacklistSubscriber {
         _meta: &events::ConnectionMeta,
         event: &events::HandshakeStatusUpdated,
     ) {
-        if matches!(
-            event,
-            events::HandshakeStatusUpdated {
-                status: events::HandshakeStatus::Confirmed { .. },
-                ..
-            }
-        ) {
+        if self.is_blacklisted(BlacklistedEvent::HandshakeStatusUpdated) {
             panic!(
-                "Handshake status updated event encountered: {:?}",
+                "Blacklisted handshake status updated event encountered: {:?}",
                 event.status
             );
         }
@@ -97,7 +129,7 @@ pub fn tracing_events() -> impl events::Subscriber {
 
     (
         event::tracing::Subscriber::default(),
-        TestBlacklistSubscriber,
+        TestBlacklistSubscriber::new(),
     )
 }
 
