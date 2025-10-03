@@ -13,7 +13,12 @@ use s2n_quic::{
 use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
 
 use rand::{Rng, RngCore};
-use std::{collections::HashSet, fmt::Debug, net::SocketAddr};
+use std::{
+    collections::HashSet,
+    fmt::Debug,
+    net::SocketAddr,
+    sync::{Arc, Mutex},
+};
 
 pub mod recorder;
 #[cfg(test)]
@@ -28,10 +33,11 @@ pub enum BlocklistedEvent {
     PacketLost,
 }
 
-/// A subscriber that panics when a blocklisted event is encountered
+/// A subscriber that asserts when a blocklisted event is encountered
 #[derive(Clone, Default)]
 pub struct TestBlocklistSubscriber {
     blocklist: HashSet<BlocklistedEvent>,
+    detected_events: Arc<Mutex<Vec<(BlocklistedEvent, String)>>>,
 }
 
 impl TestBlocklistSubscriber {
@@ -41,13 +47,47 @@ impl TestBlocklistSubscriber {
         // Add default blocklisted events
         blocklist.insert(BlocklistedEvent::PacketDropped);
         blocklist.insert(BlocklistedEvent::PacketLost);
-        Self { blocklist }
+        Self {
+            blocklist,
+            detected_events: Arc::new(Mutex::new(Vec::new())),
+        }
     }
 
     /// Creates a new TestBlocklistSubscriber with the specified blocklisted events
     pub fn with_blocklist(events: &[BlocklistedEvent]) -> Self {
         let blocklist = events.iter().copied().collect();
-        Self { blocklist }
+        Self {
+            blocklist,
+            detected_events: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// Returns a clone of the detected events for assertion
+    pub fn get_detected_events(&self) -> Arc<Mutex<Vec<(BlocklistedEvent, String)>>> {
+        self.detected_events.clone()
+    }
+
+    /// Clears any recorded blocklisted events
+    pub fn clear_detected_events(&self) {
+        let mut events = self.detected_events.lock().unwrap();
+        events.clear();
+    }
+
+    /// Asserts that no blocklisted events were detected
+    pub fn assert_no_blocklisted_events(&self) {
+        let events = self.detected_events.lock().unwrap();
+        if !events.is_empty() {
+            let event_details = events
+                .iter()
+                .map(|(event, details)| format!("{:?}: {}", event, details))
+                .collect::<Vec<_>>()
+                .join("\n  ");
+            assert!(
+                events.is_empty(),
+                "Blocklisted events were detected:\n  {}",
+                event_details
+            );
+        }
     }
 
     /// Removes an event type from the blocklist
@@ -96,7 +136,11 @@ impl events::Subscriber for TestBlocklistSubscriber {
                     ..
                 }
             ) {
-                panic!("PacketDropped event detected: {:?}", event);
+                let mut events = self.detected_events.lock().unwrap();
+                events.push((
+                    BlocklistedEvent::PacketDropped,
+                    format!("PacketDropped event detected: {:?}", event),
+                ));
             }
         }
     }
@@ -110,7 +154,11 @@ impl events::Subscriber for TestBlocklistSubscriber {
         if self.is_blocklisted(BlocklistedEvent::PacketLost) {
             // MTU probes are expected to be lost, otherwise, it shouldn't be lost
             if event.is_mtu_probe == false {
-                panic!("PacketLost event detected: {:?}", event);
+                let mut events = self.detected_events.lock().unwrap();
+                events.push((
+                    BlocklistedEvent::PacketLost,
+                    format!("PacketLost event detected: {:?}", event),
+                ));
             }
         }
     }
