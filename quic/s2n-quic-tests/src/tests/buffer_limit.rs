@@ -30,6 +30,8 @@ fn buffer_limit_test() {
     let client_hello_subscriber = recorder::TlsClientHello::new();
     let client_hello_event = client_hello_subscriber.events();
 
+    let test_block_list = TestBlocklistSubscriber::new();
+
     test(model, |handle| {
         let server = tls::Server::builder()
             .with_application_protocols(["h3"].iter())
@@ -43,7 +45,7 @@ fn buffer_limit_test() {
             .with_io(handle.builder().build()?)?
             .with_tls(server)?
             .with_event((
-                tracing_events(None),
+                tracing_events(Some(test_block_list.clone())),
                 (client_hello_subscriber, connection_closed_subscriber),
             ))?
             .with_random(Random::with_seed(456))?
@@ -66,7 +68,7 @@ fn buffer_limit_test() {
         let client = Client::builder()
             .with_io(handle.builder().build()?)?
             .with_tls(client)?
-            .with_event(tracing_events(None))?
+            .with_event(tracing_events(Some(test_block_list.clone())))?
             .with_random(Random::with_seed(456))?
             .start()?;
 
@@ -79,6 +81,8 @@ fn buffer_limit_test() {
         Ok(())
     })
     .unwrap();
+
+    test_block_list.assert_no_blocklisted_events();
 
     // The TlsClientHello payload should be more than the maximum handshake message size.
     let client_hello_handle = client_hello_event.lock().unwrap();

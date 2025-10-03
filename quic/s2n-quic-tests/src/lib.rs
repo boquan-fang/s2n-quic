@@ -125,7 +125,7 @@ impl events::Subscriber for TestBlocklistSubscriber {
     fn on_packet_dropped(
         &mut self,
         _context: &mut Self::ConnectionContext,
-        _meta: &events::ConnectionMeta,
+        meta: &events::ConnectionMeta,
         event: &events::PacketDropped,
     ) {
         if self.is_blocklisted(BlocklistedEvent::PacketDropped) {
@@ -139,7 +139,10 @@ impl events::Subscriber for TestBlocklistSubscriber {
                 let mut events = self.detected_events.lock().unwrap();
                 events.push((
                     BlocklistedEvent::PacketDropped,
-                    format!("PacketDropped event detected: {:?}", event),
+                    format!(
+                        "PacketDropped event detected: {:?}\nEvent metadata: {:?}",
+                        event, meta
+                    ),
                 ));
             }
         }
@@ -148,7 +151,7 @@ impl events::Subscriber for TestBlocklistSubscriber {
     fn on_packet_lost(
         &mut self,
         _context: &mut Self::ConnectionContext,
-        _meta: &events::ConnectionMeta,
+        meta: &events::ConnectionMeta,
         event: &events::PacketLost,
     ) {
         if self.is_blocklisted(BlocklistedEvent::PacketLost) {
@@ -157,7 +160,10 @@ impl events::Subscriber for TestBlocklistSubscriber {
                 let mut events = self.detected_events.lock().unwrap();
                 events.push((
                     BlocklistedEvent::PacketLost,
-                    format!("PacketLost event detected: {:?}", event),
+                    format!(
+                        "PacketLost event detected: {:?}\nEvent metadata: {:?}",
+                        event, meta
+                    ),
                 ));
             }
         }
