@@ -21,55 +21,55 @@ mod tests;
 
 pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::KEY_PEM);
 
-/// Enum of event types that can be blacklisted
+/// Enum of event types that can be blocklisted
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum BlacklistedEvent {
+pub enum BlocklistedEvent {
     PacketDropped,
 }
 
-/// A subscriber that panics when a blacklisted event is encountered
+/// A subscriber that panics when a blocklisted event is encountered
 #[derive(Clone, Default)]
-pub struct TestBlacklistSubscriber {
-    blacklist: HashSet<BlacklistedEvent>,
+pub struct TestBlocklistSubscriber {
+    blocklist: HashSet<BlocklistedEvent>,
 }
 
-impl TestBlacklistSubscriber {
-    /// Creates a new TestBlacklistSubscriber with a default set of blacklisted events
+impl TestBlocklistSubscriber {
+    /// Creates a new TestBlocklistSubscriber with a default set of blocklisted events
     pub fn new() -> Self {
-        let mut blacklist = HashSet::new();
-        // Add default blacklisted events
-        blacklist.insert(BlacklistedEvent::PacketDropped);
-        Self { blacklist }
+        let mut blocklist = HashSet::new();
+        // Add default blocklisted events
+        blocklist.insert(BlocklistedEvent::PacketDropped);
+        Self { blocklist }
     }
 
-    /// Creates a new TestBlacklistSubscriber with the specified blacklisted events
-    pub fn with_blacklist(events: &[BlacklistedEvent]) -> Self {
-        let blacklist = events.iter().copied().collect();
-        Self { blacklist }
+    /// Creates a new TestBlocklistSubscriber with the specified blocklisted events
+    pub fn with_blocklist(events: &[BlocklistedEvent]) -> Self {
+        let blocklist = events.iter().copied().collect();
+        Self { blocklist }
     }
 
-    /// Removes an event type from the blacklist
-    pub fn exception(mut self, event: BlacklistedEvent) -> Self {
-        self.blacklist.remove(&event);
+    /// Removes an event type from the blocklist
+    pub fn exception(mut self, event: BlocklistedEvent) -> Self {
+        self.blocklist.remove(&event);
         self
     }
 
-    /// Removes multiple event types from the blacklist
-    pub fn exceptions(mut self, events: &[BlacklistedEvent]) -> Self {
+    /// Removes multiple event types from the blocklist
+    pub fn exceptions(mut self, events: &[BlocklistedEvent]) -> Self {
         for event in events {
-            self.blacklist.remove(event);
+            self.blocklist.remove(event);
         }
         self
     }
 
-    /// Checks if the given event type is blacklisted
-    fn is_blacklisted(&self, event: BlacklistedEvent) -> bool {
-        self.blacklist.contains(&event)
+    /// Checks if the given event type is blocklisted
+    fn is_blocklisted(&self, event: BlocklistedEvent) -> bool {
+        self.blocklist.contains(&event)
     }
 }
 
-/// Implement other on_* methods as needed for events you want to blacklist
-impl events::Subscriber for TestBlacklistSubscriber {
+/// Implement other on_* methods as needed for events you want to blocklist
+impl events::Subscriber for TestBlocklistSubscriber {
     type ConnectionContext = ();
 
     fn create_connection_context(
@@ -86,7 +86,7 @@ impl events::Subscriber for TestBlacklistSubscriber {
         _meta: &events::ConnectionMeta,
         event: &events::PacketDropped,
     ) {
-        if self.is_blacklisted(BlacklistedEvent::PacketDropped) {
+        if self.is_blocklisted(BlocklistedEvent::PacketDropped) {
             if matches!(
                 event,
                 events::PacketDropped {
@@ -101,7 +101,7 @@ impl events::Subscriber for TestBlacklistSubscriber {
 }
 
 pub fn tracing_events(
-    black_list_subscriber: Option<TestBlacklistSubscriber>,
+    black_list_subscriber: Option<TestBlocklistSubscriber>,
 ) -> impl events::Subscriber {
     use std::sync::Once;
 
@@ -142,7 +142,7 @@ pub fn tracing_events(
 
     (
         event::tracing::Subscriber::default(),
-        black_list_subscriber.unwrap_or(TestBlacklistSubscriber::new()),
+        black_list_subscriber.unwrap_or(TestBlocklistSubscriber::new()),
     )
 }
 
