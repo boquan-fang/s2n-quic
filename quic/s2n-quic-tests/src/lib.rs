@@ -25,6 +25,7 @@ pub static SERVER_CERTS: (&str, &str) = (certificates::CERT_PEM, certificates::K
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BlocklistedEvent {
     PacketDropped,
+    PacketLost,
 }
 
 /// A subscriber that panics when a blocklisted event is encountered
@@ -39,6 +40,7 @@ impl TestBlocklistSubscriber {
         let mut blocklist = HashSet::new();
         // Add default blocklisted events
         blocklist.insert(BlocklistedEvent::PacketDropped);
+        blocklist.insert(BlocklistedEvent::PacketLost);
         Self { blocklist }
     }
 
@@ -95,6 +97,20 @@ impl events::Subscriber for TestBlocklistSubscriber {
                 }
             ) {
                 panic!("PacketDropped event detected: {:?}", event);
+            }
+        }
+    }
+
+    fn on_packet_lost(
+        &mut self,
+        _context: &mut Self::ConnectionContext,
+        _meta: &events::ConnectionMeta,
+        event: &events::PacketLost,
+    ) {
+        if self.is_blocklisted(BlocklistedEvent::PacketLost) {
+            // MTU probes are expected to be lost, otherwise, it shouldn't be lost
+            if event.is_mtu_probe == false {
+                panic!("PacketLost event detected: {:?}", event);
             }
         }
     }
