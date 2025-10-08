@@ -188,8 +188,13 @@ pub fn build_server(handle: &Handle, max_udp_payload: u16) -> Result<Server> {
         .start()?)
 }
 
-pub fn client(handle: &Handle, server_addr: SocketAddr, max_udp_payload: u16) -> Result {
-    let client = build_client(handle, max_udp_payload)?;
+pub fn client(
+    handle: &Handle,
+    server_addr: SocketAddr,
+    max_udp_payload: u16,
+    with_blocklist: bool,
+) -> Result {
+    let client = build_client(handle, max_udp_payload, with_blocklist)?;
     start_client(client, server_addr, Data::new(10_000))
 }
 
@@ -224,11 +229,11 @@ pub fn start_client(client: Client, server_addr: SocketAddr, data: Data) -> Resu
     Ok(())
 }
 
-pub fn build_client(handle: &Handle, max_udp_payload: u16) -> Result<Client> {
+pub fn build_client(handle: &Handle, max_udp_payload: u16, with_blocklist: bool) -> Result<Client> {
     Ok(Client::builder()
         .with_io(handle.builder().build().unwrap())?
         .with_tls(certificates::CERT_PEM)?
-        .with_event(tracing_events(true, max_udp_payload))?
+        .with_event(tracing_events(with_blocklist, max_udp_payload))?
         .with_random(Random::with_seed(123))?
         .start()?)
 }

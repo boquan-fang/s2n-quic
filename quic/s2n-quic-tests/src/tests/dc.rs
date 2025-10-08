@@ -73,7 +73,7 @@ fn dc_handshake_self_test() -> Result<()> {
         .with_tls(certificates::CERT_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
-    self_test(server, client, true, None, None)?;
+    self_test(server, client, true, None, None, true)?;
 
     Ok(())
 }
@@ -118,7 +118,7 @@ fn dc_mtls_handshake_self_test() -> Result<()> {
         .with_tls(client_tls)?
         .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?;
 
-    self_test(server, client, true, None, None)?;
+    self_test(server, client, true, None, None, true)?;
 
     Ok(())
 }
@@ -147,7 +147,14 @@ fn dc_mtls_handshake_auth_failure_self_test() -> Result<()> {
     }
     .into();
 
-    self_test(server, client, true, Some(expected_client_error), None)?;
+    self_test(
+        server,
+        client,
+        true,
+        Some(expected_client_error),
+        None,
+        true,
+    )?;
 
     Ok(())
 }
@@ -190,6 +197,7 @@ fn dc_mtls_handshake_server_not_supported_self_test() -> Result<()> {
             "peer does not support specified dc versions",
         )),
         Some(expected_server_error),
+        true,
     )?;
 
     Ok(())
@@ -238,6 +246,7 @@ fn dc_mtls_handshake_client_not_supported_self_test() -> Result<()> {
         Some(connection::Error::invalid_configuration(
             "peer does not support specified dc versions",
         )),
+        true,
     )?;
 
     Ok(())
@@ -245,16 +254,17 @@ fn dc_mtls_handshake_client_not_supported_self_test() -> Result<()> {
 
 #[test]
 fn dc_secret_control_packet() -> Result<()> {
-    dc_possible_secret_control_packet(|| true)
+    dc_possible_secret_control_packet(|| true, false)
 }
 
 #[test]
 fn dc_not_secret_control_packet() -> Result<()> {
-    dc_possible_secret_control_packet(|| false)
+    dc_possible_secret_control_packet(|| false, false)
 }
 
 fn dc_possible_secret_control_packet(
     on_possible_secret_control_packet: fn() -> bool,
+    with_blocklist: bool,
 ) -> Result<()> {
     let server_tls = build_server_mtls_provider(certificates::MTLS_CA_CERT)?;
     let server = Server::builder()
@@ -272,7 +282,8 @@ fn dc_possible_secret_control_packet(
         .with_dc(dc_endpoint)?
         .with_packet_interceptor(RandomShort::default())?;
 
-    let (client_events, _server_events) = self_test(server, client, true, None, None)?;
+    let (client_events, _server_events) =
+        self_test(server, client, true, None, None, with_blocklist)?;
 
     assert_eq!(
         1,
@@ -307,6 +318,7 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
     client_has_dc: bool,
     expected_client_error: Option<connection::Error>,
     expected_server_error: Option<connection::Error>,
+    with_blocklist: bool,
 ) -> Result<(DcRecorder, DcRecorder)> {
     let model = Model::default();
     let rtt = Duration::from_millis(100);
@@ -326,7 +338,7 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
                 metrics.subscriber("server"),
             ),
             (
-                tracing_events(true, model.max_udp_payload()),
+                tracing_events(with_blocklist, model.max_udp_payload()),
                 server_subscriber,
             ),
         );
@@ -365,7 +377,7 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
                 metrics.subscriber("client"),
             ),
             (
-                tracing_events(true, model.max_udp_payload()),
+                tracing_events(with_blocklist, model.max_udp_payload()),
                 client_subscriber,
             ),
         );

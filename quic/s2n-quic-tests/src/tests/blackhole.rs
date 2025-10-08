@@ -19,7 +19,7 @@ fn blackhole(model: Model, blackhole_duration: Duration) {
         });
 
         let addr = server(handle, max_udp_payload)?;
-        client(handle, addr, max_udp_payload)?;
+        client(handle, addr, max_udp_payload, true)?;
         Ok(addr)
     })
     .unwrap();

@@ -74,7 +74,7 @@ fn mtu_updates<S: tls::Provider, C: tls::Provider>(
                     .build()?,
             )?
             .with_tls(server)?
-            .with_event((tracing_events(true, model.max_udp_payload()), subscriber))?
+            .with_event((tracing_events(false, model.max_udp_payload()), subscriber))?
             .with_random(Random::with_seed(456))?;
 
         let server = if let Some(config_override) = config_override {
@@ -93,7 +93,7 @@ fn mtu_updates<S: tls::Provider, C: tls::Provider>(
                     .build()
                     .unwrap(),
             )?
-            .with_event(tracing_events(true, model.max_udp_payload()))?
+            .with_event(tracing_events(false, model.max_udp_payload()))?
             .with_random(Random::with_seed(456))?
             .with_tls(client)?
             .start()?;
@@ -436,13 +436,13 @@ fn mtu_loss_no_blackhole() {
         let server = Server::builder()
             .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
             .with_tls(SERVER_CERTS)?
-            .with_event((tracing_events(true, model.max_udp_payload()), subscriber))?
+            .with_event((tracing_events(false, model.max_udp_payload()), subscriber))?
             .with_random(Random::with_seed(456))?
             .start()?;
         let client = Client::builder()
             .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
             .with_tls(certificates::CERT_PEM)?
-            .with_event(tracing_events(true, model.max_udp_payload()))?
+            .with_event(tracing_events(false, model.max_udp_payload()))?
             .with_random(Random::with_seed(456))?
             .start()?;
         let addr = start_server(server)?;
@@ -491,13 +491,13 @@ fn mtu_blackhole() {
         let server = Server::builder()
             .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
             .with_tls(SERVER_CERTS)?
-            .with_event((tracing_events(true, model.max_udp_payload()), subscriber))?
+            .with_event((tracing_events(false, model.max_udp_payload()), subscriber))?
             .with_random(Random::with_seed(456))?
             .start()?;
         let client = Client::builder()
             .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
             .with_tls(certificates::CERT_PEM)?
-            .with_event(tracing_events(true, model.max_udp_payload()))?
+            .with_event(tracing_events(false, model.max_udp_payload()))?
             .with_random(Random::with_seed(456))?
             .start()?;
         let addr = start_server(server)?;

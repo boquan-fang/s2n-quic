@@ -42,7 +42,7 @@ fn stream_reset_test() {
             }
         });
 
-        let client = build_client(handle, model.max_udp_payload())?;
+        let client = build_client(handle, model.max_udp_payload(), true)?;
 
         primary::spawn(async move {
             let connect = Connect::new(server_addr).with_server_name("localhost");

@@ -14,7 +14,7 @@ fn tokio_read_exact_test() {
     test(model, |handle| {
         let server_addr = server(handle, max_udp_payload)?;
 
-        let client = build_client(handle, max_udp_payload)?;
+        let client = build_client(handle, max_udp_payload, true)?;
 
         // send 5000 bytes
         const LEN: usize = 5000;

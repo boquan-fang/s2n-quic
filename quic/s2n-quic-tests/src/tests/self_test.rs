@@ -12,7 +12,7 @@ fn client_server_test() {
     let max_udp_payload = model.max_udp_payload();
     test(model.clone(), |handle| {
         let addr = server(handle, max_udp_payload)?;
-        client(handle, addr, max_udp_payload)?;
+        client(handle, addr, max_udp_payload, true)?;
         Ok(addr)
     })
     .unwrap();
@@ -38,7 +38,7 @@ fn packet_sent_event_test() {
         // store addr in exterior scope so we can use it to filter packets
         // after the test ends
         server_socket = Some(addr);
-        client(handle, addr, model.max_udp_payload())?;
+        client(handle, addr, model.max_udp_payload(), true)?;
         Ok(addr)
     })
     .unwrap();
