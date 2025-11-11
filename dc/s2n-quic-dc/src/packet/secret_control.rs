@@ -17,6 +17,7 @@ mod encoder;
 const UNKNOWN_PATH_SECRET: u8 = 0b0110_0000;
 const STALE_KEY: u8 = 0b0110_0001;
 const REPLAY_DETECTED: u8 = 0b0110_0010;
+const MTU_PROBING_COMPLETE: u8 = 0b0110_0011;
 
 /// Indicates if the packet has a queue_id field
 ///
@@ -134,10 +135,12 @@ macro_rules! impl_tests {
     };
 }
 
+pub mod mtu_probing_complete;
 pub mod replay_detected;
 pub mod stale_key;
 pub mod unknown_path_secret;
 
+pub use mtu_probing_complete::MtuProbingComplete;
 pub use replay_detected::ReplayDetected;
 pub use stale_key::StaleKey;
 pub use unknown_path_secret::UnknownPathSecret;
@@ -147,6 +150,7 @@ pub enum Packet<'a> {
     UnknownPathSecret(unknown_path_secret::Packet<'a>),
     StaleKey(stale_key::Packet<'a>),
     ReplayDetected(replay_detected::Packet<'a>),
+    MtuProbingComplete(mtu_probing_complete::Packet<'a>),
 }
 
 impl<'a> Packet<'a> {
@@ -168,6 +172,10 @@ impl<'a> Packet<'a> {
                 let (packet, buffer) = replay_detected::Packet::decode(buffer)?;
                 (Self::ReplayDetected(packet), buffer)
             }
+            MTU_PROBING_COMPLETE => {
+                let (packet, buffer) = mtu_probing_complete::Packet::decode(buffer)?;
+                (Self::MtuProbingComplete(packet), buffer)
+            }
             _ => return Err(DecoderError::InvariantViolation("invalid tag")),
         })
     }
@@ -178,6 +186,7 @@ impl<'a> Packet<'a> {
             Self::UnknownPathSecret(p) => p.credential_id(),
             Self::StaleKey(p) => p.credential_id(),
             Self::ReplayDetected(p) => p.credential_id(),
+            Self::MtuProbingComplete(p) => p.credential_id(),
         }
     }
 
@@ -187,6 +196,7 @@ impl<'a> Packet<'a> {
             Self::UnknownPathSecret(p) => p.queue_id(),
             Self::StaleKey(p) => p.queue_id(),
             Self::ReplayDetected(p) => p.queue_id(),
+            Self::MtuProbingComplete(p) => p.queue_id(),
         }
     }
 }
@@ -205,3 +215,4 @@ macro_rules! impl_convert {
 impl_convert!(UnknownPathSecret, unknown_path_secret);
 impl_convert!(StaleKey, stale_key);
 impl_convert!(ReplayDetected, replay_detected);
+impl_convert!(MtuProbingComplete, mtu_probing_complete);
