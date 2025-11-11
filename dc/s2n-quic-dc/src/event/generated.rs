@@ -2090,6 +2090,103 @@ pub mod api {
     }
     #[derive(Clone, Debug)]
     #[non_exhaustive]
+    #[doc = " Emitted when an MtuProbingComplete packet was sent"]
+    pub struct MtuProbingCompletePacketSent<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompletePacketSent<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompletePacketSent");
+            fmt.field("peer_address", &self.peer_address);
+            fmt.field("credential_id", &"[HIDDEN]");
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompletePacketSent<'a> {
+        const NAME: &'static str = "path_secret_map:mtu_probing_complete_packet_sent";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
+    #[doc = " Emitted when an MtuProbingComplete packet was received"]
+    pub struct MtuProbingCompletePacketReceived<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompletePacketReceived<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompletePacketReceived");
+            fmt.field("peer_address", &self.peer_address);
+            fmt.field("credential_id", &"[HIDDEN]");
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompletePacketReceived<'a> {
+        const NAME: &'static str = "path_secret_map:mtu_probing_complete_packet_received";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
+    #[doc = " Emitted when an MtuProbingComplete packet was authentic and processed"]
+    pub struct MtuProbingCompletePacketAccepted<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+        pub mtu: u16,
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompletePacketAccepted<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompletePacketAccepted");
+            fmt.field("peer_address", &self.peer_address);
+            fmt.field("credential_id", &"[HIDDEN]");
+            fmt.field("mtu", &self.mtu);
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompletePacketAccepted<'a> {
+        const NAME: &'static str = "path_secret_map:mtu_probing_complete_packet_accepted";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
+    #[doc = " Emitted when an MtuProbingComplete packet was rejected as invalid"]
+    pub struct MtuProbingCompletePacketRejected<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompletePacketRejected<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompletePacketRejected");
+            fmt.field("peer_address", &self.peer_address);
+            fmt.field("credential_id", &"[HIDDEN]");
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompletePacketRejected<'a> {
+        const NAME: &'static str = "path_secret_map:mtu_probing_complete_packet_rejected";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
+    #[doc = " Emitted when an MtuProbingComplete packet was dropped due to a missing entry"]
+    pub struct MtuProbingCompletePacketDropped<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompletePacketDropped<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompletePacketDropped");
+            fmt.field("peer_address", &self.peer_address);
+            fmt.field("credential_id", &"[HIDDEN]");
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompletePacketDropped<'a> {
+        const NAME: &'static str = "path_secret_map:mtu_probing_complete_packet_dropped";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
     #[doc = " Emitted when the cache is accessed by peer address"]
     #[doc = ""]
     #[doc = " This can be used to track cache hit ratios"]
@@ -3441,6 +3538,72 @@ pub mod tracing {
                 credential_id,
             } = event;
             tracing :: event ! (target : "stale_key_packet_dropped" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) });
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketSent,
+        ) {
+            let parent = self.parent(meta);
+            let api::MtuProbingCompletePacketSent {
+                peer_address,
+                credential_id,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_packet_sent" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) });
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketReceived,
+        ) {
+            let parent = self.parent(meta);
+            let api::MtuProbingCompletePacketReceived {
+                peer_address,
+                credential_id,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_packet_received" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) });
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketAccepted,
+        ) {
+            let parent = self.parent(meta);
+            let api::MtuProbingCompletePacketAccepted {
+                peer_address,
+                credential_id,
+                mtu,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_packet_accepted" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) , mtu = tracing :: field :: debug (mtu) });
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketRejected,
+        ) {
+            let parent = self.parent(meta);
+            let api::MtuProbingCompletePacketRejected {
+                peer_address,
+                credential_id,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_packet_rejected" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) });
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketDropped,
+        ) {
+            let parent = self.parent(meta);
+            let api::MtuProbingCompletePacketDropped {
+                peer_address,
+                credential_id,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_packet_dropped" , parent : parent , tracing :: Level :: DEBUG , { peer_address = tracing :: field :: debug (peer_address) , credential_id = tracing :: field :: debug (credential_id) });
         }
         #[inline]
         fn on_path_secret_map_address_cache_accessed(
@@ -5544,6 +5707,112 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    #[doc = " Emitted when an MtuProbingComplete packet was sent"]
+    pub struct MtuProbingCompletePacketSent<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompletePacketSent<'a>> for MtuProbingCompletePacketSent<'a> {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompletePacketSent<'a> {
+            let MtuProbingCompletePacketSent {
+                peer_address,
+                credential_id,
+            } = self;
+            api::MtuProbingCompletePacketSent {
+                peer_address: peer_address.into_event(),
+                credential_id: credential_id.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    #[doc = " Emitted when an MtuProbingComplete packet was received"]
+    pub struct MtuProbingCompletePacketReceived<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompletePacketReceived<'a>>
+        for MtuProbingCompletePacketReceived<'a>
+    {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompletePacketReceived<'a> {
+            let MtuProbingCompletePacketReceived {
+                peer_address,
+                credential_id,
+            } = self;
+            api::MtuProbingCompletePacketReceived {
+                peer_address: peer_address.into_event(),
+                credential_id: credential_id.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    #[doc = " Emitted when an MtuProbingComplete packet was authentic and processed"]
+    pub struct MtuProbingCompletePacketAccepted<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+        pub mtu: u16,
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompletePacketAccepted<'a>>
+        for MtuProbingCompletePacketAccepted<'a>
+    {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompletePacketAccepted<'a> {
+            let MtuProbingCompletePacketAccepted {
+                peer_address,
+                credential_id,
+                mtu,
+            } = self;
+            api::MtuProbingCompletePacketAccepted {
+                peer_address: peer_address.into_event(),
+                credential_id: credential_id.into_event(),
+                mtu: mtu.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    #[doc = " Emitted when an MtuProbingComplete packet was rejected as invalid"]
+    pub struct MtuProbingCompletePacketRejected<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompletePacketRejected<'a>>
+        for MtuProbingCompletePacketRejected<'a>
+    {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompletePacketRejected<'a> {
+            let MtuProbingCompletePacketRejected {
+                peer_address,
+                credential_id,
+            } = self;
+            api::MtuProbingCompletePacketRejected {
+                peer_address: peer_address.into_event(),
+                credential_id: credential_id.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    #[doc = " Emitted when an MtuProbingComplete packet was dropped due to a missing entry"]
+    pub struct MtuProbingCompletePacketDropped<'a> {
+        pub peer_address: SocketAddress<'a>,
+        pub credential_id: &'a [u8],
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompletePacketDropped<'a>>
+        for MtuProbingCompletePacketDropped<'a>
+    {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompletePacketDropped<'a> {
+            let MtuProbingCompletePacketDropped {
+                peer_address,
+                credential_id,
+            } = self;
+            api::MtuProbingCompletePacketDropped {
+                peer_address: peer_address.into_event(),
+                credential_id: credential_id.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     #[doc = " Emitted when the cache is accessed by peer address"]
     #[doc = ""]
     #[doc = " This can be used to track cache hit ratios"]
@@ -6661,6 +6930,56 @@ mod traits {
             let _ = meta;
             let _ = event;
         }
+        #[doc = "Called when the `MtuProbingCompletePacketSent` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketSent,
+        ) {
+            let _ = meta;
+            let _ = event;
+        }
+        #[doc = "Called when the `MtuProbingCompletePacketReceived` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketReceived,
+        ) {
+            let _ = meta;
+            let _ = event;
+        }
+        #[doc = "Called when the `MtuProbingCompletePacketAccepted` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketAccepted,
+        ) {
+            let _ = meta;
+            let _ = event;
+        }
+        #[doc = "Called when the `MtuProbingCompletePacketRejected` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketRejected,
+        ) {
+            let _ = meta;
+            let _ = event;
+        }
+        #[doc = "Called when the `MtuProbingCompletePacketDropped` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketDropped,
+        ) {
+            let _ = meta;
+            let _ = event;
+        }
         #[doc = "Called when the `PathSecretMapAddressCacheAccessed` event is triggered"]
         #[inline]
         fn on_path_secret_map_address_cache_accessed(
@@ -7475,6 +7794,51 @@ mod traits {
             event: &api::StaleKeyPacketDropped,
         ) {
             self.as_ref().on_stale_key_packet_dropped(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketSent,
+        ) {
+            self.as_ref()
+                .on_mtu_probing_complete_packet_sent(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketReceived,
+        ) {
+            self.as_ref()
+                .on_mtu_probing_complete_packet_received(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketAccepted,
+        ) {
+            self.as_ref()
+                .on_mtu_probing_complete_packet_accepted(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketRejected,
+        ) {
+            self.as_ref()
+                .on_mtu_probing_complete_packet_rejected(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketDropped,
+        ) {
+            self.as_ref()
+                .on_mtu_probing_complete_packet_dropped(meta, event);
         }
         #[inline]
         fn on_path_secret_map_address_cache_accessed(
@@ -8329,6 +8693,51 @@ mod traits {
             (self.1).on_stale_key_packet_dropped(meta, event);
         }
         #[inline]
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketSent,
+        ) {
+            (self.0).on_mtu_probing_complete_packet_sent(meta, event);
+            (self.1).on_mtu_probing_complete_packet_sent(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketReceived,
+        ) {
+            (self.0).on_mtu_probing_complete_packet_received(meta, event);
+            (self.1).on_mtu_probing_complete_packet_received(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketAccepted,
+        ) {
+            (self.0).on_mtu_probing_complete_packet_accepted(meta, event);
+            (self.1).on_mtu_probing_complete_packet_accepted(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketRejected,
+        ) {
+            (self.0).on_mtu_probing_complete_packet_rejected(meta, event);
+            (self.1).on_mtu_probing_complete_packet_rejected(meta, event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketDropped,
+        ) {
+            (self.0).on_mtu_probing_complete_packet_dropped(meta, event);
+            (self.1).on_mtu_probing_complete_packet_dropped(meta, event);
+        }
+        #[inline]
         fn on_path_secret_map_address_cache_accessed(
             &self,
             meta: &api::EndpointMeta,
@@ -8542,6 +8951,28 @@ mod traits {
         fn on_stale_key_packet_rejected(&self, event: builder::StaleKeyPacketRejected);
         #[doc = "Publishes a `StaleKeyPacketDropped` event to the publisher's subscriber"]
         fn on_stale_key_packet_dropped(&self, event: builder::StaleKeyPacketDropped);
+        #[doc = "Publishes a `MtuProbingCompletePacketSent` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_packet_sent(&self, event: builder::MtuProbingCompletePacketSent);
+        #[doc = "Publishes a `MtuProbingCompletePacketReceived` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            event: builder::MtuProbingCompletePacketReceived,
+        );
+        #[doc = "Publishes a `MtuProbingCompletePacketAccepted` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            event: builder::MtuProbingCompletePacketAccepted,
+        );
+        #[doc = "Publishes a `MtuProbingCompletePacketRejected` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            event: builder::MtuProbingCompletePacketRejected,
+        );
+        #[doc = "Publishes a `MtuProbingCompletePacketDropped` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            event: builder::MtuProbingCompletePacketDropped,
+        );
         #[doc = "Publishes a `PathSecretMapAddressCacheAccessed` event to the publisher's subscriber"]
         fn on_path_secret_map_address_cache_accessed(
             &self,
@@ -8964,6 +9395,56 @@ mod traits {
             let event = event.into_event();
             self.subscriber
                 .on_stale_key_packet_dropped(&self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            event: builder::MtuProbingCompletePacketSent,
+        ) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_packet_sent(&self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            event: builder::MtuProbingCompletePacketReceived,
+        ) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_packet_received(&self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            event: builder::MtuProbingCompletePacketAccepted,
+        ) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_packet_accepted(&self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            event: builder::MtuProbingCompletePacketRejected,
+        ) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_packet_rejected(&self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            event: builder::MtuProbingCompletePacketDropped,
+        ) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_packet_dropped(&self.meta, &event);
             self.subscriber.on_event(&self.meta, &event);
         }
         #[inline]
@@ -9510,6 +9991,11 @@ pub mod testing {
             pub stale_key_packet_accepted: AtomicU64,
             pub stale_key_packet_rejected: AtomicU64,
             pub stale_key_packet_dropped: AtomicU64,
+            pub mtu_probing_complete_packet_sent: AtomicU64,
+            pub mtu_probing_complete_packet_received: AtomicU64,
+            pub mtu_probing_complete_packet_accepted: AtomicU64,
+            pub mtu_probing_complete_packet_rejected: AtomicU64,
+            pub mtu_probing_complete_packet_dropped: AtomicU64,
             pub path_secret_map_address_cache_accessed: AtomicU64,
             pub path_secret_map_address_cache_accessed_hit: AtomicU64,
             pub path_secret_map_id_cache_accessed: AtomicU64,
@@ -9598,6 +10084,11 @@ pub mod testing {
                     stale_key_packet_accepted: AtomicU64::new(0),
                     stale_key_packet_rejected: AtomicU64::new(0),
                     stale_key_packet_dropped: AtomicU64::new(0),
+                    mtu_probing_complete_packet_sent: AtomicU64::new(0),
+                    mtu_probing_complete_packet_received: AtomicU64::new(0),
+                    mtu_probing_complete_packet_accepted: AtomicU64::new(0),
+                    mtu_probing_complete_packet_rejected: AtomicU64::new(0),
+                    mtu_probing_complete_packet_dropped: AtomicU64::new(0),
                     path_secret_map_address_cache_accessed: AtomicU64::new(0),
                     path_secret_map_address_cache_accessed_hit: AtomicU64::new(0),
                     path_secret_map_id_cache_accessed: AtomicU64::new(0),
@@ -10197,6 +10688,66 @@ pub mod testing {
                 let out = format!("{meta:?} {event:?}");
                 self.output.lock().unwrap().push(out);
             }
+            fn on_mtu_probing_complete_packet_sent(
+                &self,
+                meta: &api::EndpointMeta,
+                event: &api::MtuProbingCompletePacketSent,
+            ) {
+                self.mtu_probing_complete_packet_sent
+                    .fetch_add(1, Ordering::Relaxed);
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.lock().unwrap().push(out);
+            }
+            fn on_mtu_probing_complete_packet_received(
+                &self,
+                meta: &api::EndpointMeta,
+                event: &api::MtuProbingCompletePacketReceived,
+            ) {
+                self.mtu_probing_complete_packet_received
+                    .fetch_add(1, Ordering::Relaxed);
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.lock().unwrap().push(out);
+            }
+            fn on_mtu_probing_complete_packet_accepted(
+                &self,
+                meta: &api::EndpointMeta,
+                event: &api::MtuProbingCompletePacketAccepted,
+            ) {
+                self.mtu_probing_complete_packet_accepted
+                    .fetch_add(1, Ordering::Relaxed);
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.lock().unwrap().push(out);
+            }
+            fn on_mtu_probing_complete_packet_rejected(
+                &self,
+                meta: &api::EndpointMeta,
+                event: &api::MtuProbingCompletePacketRejected,
+            ) {
+                self.mtu_probing_complete_packet_rejected
+                    .fetch_add(1, Ordering::Relaxed);
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.lock().unwrap().push(out);
+            }
+            fn on_mtu_probing_complete_packet_dropped(
+                &self,
+                meta: &api::EndpointMeta,
+                event: &api::MtuProbingCompletePacketDropped,
+            ) {
+                self.mtu_probing_complete_packet_dropped
+                    .fetch_add(1, Ordering::Relaxed);
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.lock().unwrap().push(out);
+            }
             fn on_path_secret_map_address_cache_accessed(
                 &self,
                 meta: &api::EndpointMeta,
@@ -10369,6 +10920,11 @@ pub mod testing {
         pub stale_key_packet_accepted: AtomicU64,
         pub stale_key_packet_rejected: AtomicU64,
         pub stale_key_packet_dropped: AtomicU64,
+        pub mtu_probing_complete_packet_sent: AtomicU64,
+        pub mtu_probing_complete_packet_received: AtomicU64,
+        pub mtu_probing_complete_packet_accepted: AtomicU64,
+        pub mtu_probing_complete_packet_rejected: AtomicU64,
+        pub mtu_probing_complete_packet_dropped: AtomicU64,
         pub path_secret_map_address_cache_accessed: AtomicU64,
         pub path_secret_map_address_cache_accessed_hit: AtomicU64,
         pub path_secret_map_id_cache_accessed: AtomicU64,
@@ -10489,6 +11045,11 @@ pub mod testing {
                 stale_key_packet_accepted: AtomicU64::new(0),
                 stale_key_packet_rejected: AtomicU64::new(0),
                 stale_key_packet_dropped: AtomicU64::new(0),
+                mtu_probing_complete_packet_sent: AtomicU64::new(0),
+                mtu_probing_complete_packet_received: AtomicU64::new(0),
+                mtu_probing_complete_packet_accepted: AtomicU64::new(0),
+                mtu_probing_complete_packet_rejected: AtomicU64::new(0),
+                mtu_probing_complete_packet_dropped: AtomicU64::new(0),
                 path_secret_map_address_cache_accessed: AtomicU64::new(0),
                 path_secret_map_address_cache_accessed_hit: AtomicU64::new(0),
                 path_secret_map_id_cache_accessed: AtomicU64::new(0),
@@ -11546,6 +12107,66 @@ pub mod testing {
             let out = format!("{meta:?} {event:?}");
             self.output.lock().unwrap().push(out);
         }
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketSent,
+        ) {
+            self.mtu_probing_complete_packet_sent
+                .fetch_add(1, Ordering::Relaxed);
+            let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+            let event = crate::event::snapshot::Fmt::to_snapshot(event);
+            let out = format!("{meta:?} {event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketReceived,
+        ) {
+            self.mtu_probing_complete_packet_received
+                .fetch_add(1, Ordering::Relaxed);
+            let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+            let event = crate::event::snapshot::Fmt::to_snapshot(event);
+            let out = format!("{meta:?} {event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketAccepted,
+        ) {
+            self.mtu_probing_complete_packet_accepted
+                .fetch_add(1, Ordering::Relaxed);
+            let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+            let event = crate::event::snapshot::Fmt::to_snapshot(event);
+            let out = format!("{meta:?} {event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketRejected,
+        ) {
+            self.mtu_probing_complete_packet_rejected
+                .fetch_add(1, Ordering::Relaxed);
+            let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+            let event = crate::event::snapshot::Fmt::to_snapshot(event);
+            let out = format!("{meta:?} {event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            meta: &api::EndpointMeta,
+            event: &api::MtuProbingCompletePacketDropped,
+        ) {
+            self.mtu_probing_complete_packet_dropped
+                .fetch_add(1, Ordering::Relaxed);
+            let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+            let event = crate::event::snapshot::Fmt::to_snapshot(event);
+            let out = format!("{meta:?} {event:?}");
+            self.output.lock().unwrap().push(out);
+        }
         fn on_path_secret_map_address_cache_accessed(
             &self,
             meta: &api::EndpointMeta,
@@ -11717,6 +12338,11 @@ pub mod testing {
         pub stale_key_packet_accepted: AtomicU64,
         pub stale_key_packet_rejected: AtomicU64,
         pub stale_key_packet_dropped: AtomicU64,
+        pub mtu_probing_complete_packet_sent: AtomicU64,
+        pub mtu_probing_complete_packet_received: AtomicU64,
+        pub mtu_probing_complete_packet_accepted: AtomicU64,
+        pub mtu_probing_complete_packet_rejected: AtomicU64,
+        pub mtu_probing_complete_packet_dropped: AtomicU64,
         pub path_secret_map_address_cache_accessed: AtomicU64,
         pub path_secret_map_address_cache_accessed_hit: AtomicU64,
         pub path_secret_map_id_cache_accessed: AtomicU64,
@@ -11827,6 +12453,11 @@ pub mod testing {
                 stale_key_packet_accepted: AtomicU64::new(0),
                 stale_key_packet_rejected: AtomicU64::new(0),
                 stale_key_packet_dropped: AtomicU64::new(0),
+                mtu_probing_complete_packet_sent: AtomicU64::new(0),
+                mtu_probing_complete_packet_received: AtomicU64::new(0),
+                mtu_probing_complete_packet_accepted: AtomicU64::new(0),
+                mtu_probing_complete_packet_rejected: AtomicU64::new(0),
+                mtu_probing_complete_packet_dropped: AtomicU64::new(0),
                 path_secret_map_address_cache_accessed: AtomicU64::new(0),
                 path_secret_map_address_cache_accessed_hit: AtomicU64::new(0),
                 path_secret_map_id_cache_accessed: AtomicU64::new(0),
@@ -12245,6 +12876,61 @@ pub mod testing {
         }
         fn on_stale_key_packet_dropped(&self, event: builder::StaleKeyPacketDropped) {
             self.stale_key_packet_dropped
+                .fetch_add(1, Ordering::Relaxed);
+            let event = event.into_event();
+            let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+            let out = format!("{event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_sent(
+            &self,
+            event: builder::MtuProbingCompletePacketSent,
+        ) {
+            self.mtu_probing_complete_packet_sent
+                .fetch_add(1, Ordering::Relaxed);
+            let event = event.into_event();
+            let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+            let out = format!("{event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_received(
+            &self,
+            event: builder::MtuProbingCompletePacketReceived,
+        ) {
+            self.mtu_probing_complete_packet_received
+                .fetch_add(1, Ordering::Relaxed);
+            let event = event.into_event();
+            let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+            let out = format!("{event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_accepted(
+            &self,
+            event: builder::MtuProbingCompletePacketAccepted,
+        ) {
+            self.mtu_probing_complete_packet_accepted
+                .fetch_add(1, Ordering::Relaxed);
+            let event = event.into_event();
+            let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+            let out = format!("{event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_rejected(
+            &self,
+            event: builder::MtuProbingCompletePacketRejected,
+        ) {
+            self.mtu_probing_complete_packet_rejected
+                .fetch_add(1, Ordering::Relaxed);
+            let event = event.into_event();
+            let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+            let out = format!("{event:?}");
+            self.output.lock().unwrap().push(out);
+        }
+        fn on_mtu_probing_complete_packet_dropped(
+            &self,
+            event: builder::MtuProbingCompletePacketDropped,
+        ) {
+            self.mtu_probing_complete_packet_dropped
                 .fetch_add(1, Ordering::Relaxed);
             let event = event.into_event();
             let event = crate::event::snapshot::Fmt::to_snapshot(&event);

@@ -111,13 +111,18 @@ mod counter {
                 259usize => Self(stale_key_packet_accepted),
                 261usize => Self(stale_key_packet_rejected),
                 263usize => Self(stale_key_packet_dropped),
-                265usize => Self(path_secret_map_address_cache_accessed),
-                268usize => Self(path_secret_map_address_cache_accessed_hit),
-                271usize => Self(path_secret_map_id_cache_accessed),
-                273usize => Self(path_secret_map_id_cache_accessed_hit),
-                275usize => Self(path_secret_map_cleaner_cycled),
-                292usize => Self(path_secret_map_id_write_lock),
-                295usize => Self(path_secret_map_address_write_lock),
+                265usize => Self(mtu_probing_complete_packet_sent),
+                267usize => Self(mtu_probing_complete_packet_received),
+                269usize => Self(mtu_probing_complete_packet_accepted),
+                271usize => Self(mtu_probing_complete_packet_rejected),
+                273usize => Self(mtu_probing_complete_packet_dropped),
+                275usize => Self(path_secret_map_address_cache_accessed),
+                278usize => Self(path_secret_map_address_cache_accessed_hit),
+                281usize => Self(path_secret_map_id_cache_accessed),
+                283usize => Self(path_secret_map_id_cache_accessed_hit),
+                285usize => Self(path_secret_map_cleaner_cycled),
+                302usize => Self(path_secret_map_id_write_lock),
+                305usize => Self(path_secret_map_address_write_lock),
                 _ => unreachable!("invalid info: {info:?}"),
             }
         }
@@ -317,6 +322,16 @@ mod counter {
             fn stale_key_packet_rejected(value: u64);
             # [link_name = s2n_quic_dc__event__counter__stale_key_packet_dropped]
             fn stale_key_packet_dropped(value: u64);
+            # [link_name = s2n_quic_dc__event__counter__mtu_probing_complete_packet_sent]
+            fn mtu_probing_complete_packet_sent(value: u64);
+            # [link_name = s2n_quic_dc__event__counter__mtu_probing_complete_packet_received]
+            fn mtu_probing_complete_packet_received(value: u64);
+            # [link_name = s2n_quic_dc__event__counter__mtu_probing_complete_packet_accepted]
+            fn mtu_probing_complete_packet_accepted(value: u64);
+            # [link_name = s2n_quic_dc__event__counter__mtu_probing_complete_packet_rejected]
+            fn mtu_probing_complete_packet_rejected(value: u64);
+            # [link_name = s2n_quic_dc__event__counter__mtu_probing_complete_packet_dropped]
+            fn mtu_probing_complete_packet_dropped(value: u64);
             # [link_name = s2n_quic_dc__event__counter__path_secret_map_address_cache_accessed]
             fn path_secret_map_address_cache_accessed(value: u64);
             # [link_name = s2n_quic_dc__event__counter__path_secret_map_address_cache_accessed_hit]
@@ -359,8 +374,8 @@ mod counter {
                     200usize => Self(stream_control_packet_received__authenticated),
                     207usize => Self(endpoint_initialized__tcp),
                     208usize => Self(endpoint_initialized__udp),
-                    267usize => Self(path_secret_map_address_cache_accessed__hit),
-                    272usize => Self(path_secret_map_id_cache_accessed__hit),
+                    277usize => Self(path_secret_map_address_cache_accessed__hit),
+                    282usize => Self(path_secret_map_id_cache_accessed__hit),
                     _ => unreachable!("invalid info: {info:?}"),
                 }
             }
@@ -457,10 +472,15 @@ mod counter {
                     260usize => Self(stale_key_packet_accepted__peer_address__protocol),
                     262usize => Self(stale_key_packet_rejected__peer_address__protocol),
                     264usize => Self(stale_key_packet_dropped__peer_address__protocol),
-                    266usize => {
+                    266usize => Self(mtu_probing_complete_packet_sent__peer_address__protocol),
+                    268usize => Self(mtu_probing_complete_packet_received__peer_address__protocol),
+                    270usize => Self(mtu_probing_complete_packet_accepted__peer_address__protocol),
+                    272usize => Self(mtu_probing_complete_packet_rejected__peer_address__protocol),
+                    274usize => Self(mtu_probing_complete_packet_dropped__peer_address__protocol),
+                    276usize => {
                         Self(path_secret_map_address_cache_accessed__peer_address__protocol)
                     }
-                    269usize => {
+                    279usize => {
                         Self(path_secret_map_address_cache_accessed_hit__peer_address__protocol)
                     }
                     _ => unreachable!("invalid info: {info:?}"),
@@ -647,6 +667,36 @@ mod counter {
                     variant: u64,
                     variant_name: &info::Str,
                 );
+                # [link_name = s2n_quic_dc__event__counter__nominal__mtu_probing_complete_packet_sent__peer_address__protocol]
+                fn mtu_probing_complete_packet_sent__peer_address__protocol(
+                    value: u64,
+                    variant: u64,
+                    variant_name: &info::Str,
+                );
+                # [link_name = s2n_quic_dc__event__counter__nominal__mtu_probing_complete_packet_received__peer_address__protocol]
+                fn mtu_probing_complete_packet_received__peer_address__protocol(
+                    value: u64,
+                    variant: u64,
+                    variant_name: &info::Str,
+                );
+                # [link_name = s2n_quic_dc__event__counter__nominal__mtu_probing_complete_packet_accepted__peer_address__protocol]
+                fn mtu_probing_complete_packet_accepted__peer_address__protocol(
+                    value: u64,
+                    variant: u64,
+                    variant_name: &info::Str,
+                );
+                # [link_name = s2n_quic_dc__event__counter__nominal__mtu_probing_complete_packet_rejected__peer_address__protocol]
+                fn mtu_probing_complete_packet_rejected__peer_address__protocol(
+                    value: u64,
+                    variant: u64,
+                    variant_name: &info::Str,
+                );
+                # [link_name = s2n_quic_dc__event__counter__nominal__mtu_probing_complete_packet_dropped__peer_address__protocol]
+                fn mtu_probing_complete_packet_dropped__peer_address__protocol(
+                    value: u64,
+                    variant: u64,
+                    variant_name: &info::Str,
+                );
                 # [link_name = s2n_quic_dc__event__counter__nominal__path_secret_map_address_cache_accessed__peer_address__protocol]
                 fn path_secret_map_address_cache_accessed__peer_address__protocol(
                     value: u64,
@@ -773,32 +823,32 @@ mod measure {
                 240usize => Self(key_accepted__gap),
                 241usize => Self(key_accepted__forward_shift),
                 244usize => Self(replay_potentially_detected__gap),
-                270usize => Self(path_secret_map_address_cache_accessed_hit__age),
-                274usize => Self(path_secret_map_id_cache_accessed_hit__age),
-                276usize => Self(path_secret_map_cleaner_cycled__entries__id),
-                277usize => Self(path_secret_map_cleaner_cycled__entries__id__retired),
-                278usize => Self(path_secret_map_cleaner_cycled__entries__id__active),
-                279usize => Self(path_secret_map_cleaner_cycled__entries__id__active__utilization),
-                280usize => Self(path_secret_map_cleaner_cycled__entries__id__utilization),
-                281usize => Self(path_secret_map_cleaner_cycled__entries__id__utilization__initial),
-                282usize => Self(path_secret_map_cleaner_cycled__entries__address),
-                283usize => Self(path_secret_map_cleaner_cycled__entries__address__active),
-                284usize => {
+                280usize => Self(path_secret_map_address_cache_accessed_hit__age),
+                284usize => Self(path_secret_map_id_cache_accessed_hit__age),
+                286usize => Self(path_secret_map_cleaner_cycled__entries__id),
+                287usize => Self(path_secret_map_cleaner_cycled__entries__id__retired),
+                288usize => Self(path_secret_map_cleaner_cycled__entries__id__active),
+                289usize => Self(path_secret_map_cleaner_cycled__entries__id__active__utilization),
+                290usize => Self(path_secret_map_cleaner_cycled__entries__id__utilization),
+                291usize => Self(path_secret_map_cleaner_cycled__entries__id__utilization__initial),
+                292usize => Self(path_secret_map_cleaner_cycled__entries__address),
+                293usize => Self(path_secret_map_cleaner_cycled__entries__address__active),
+                294usize => {
                     Self(path_secret_map_cleaner_cycled__entries__address__active__utilization)
                 }
-                285usize => Self(path_secret_map_cleaner_cycled__entries__address__retired),
-                286usize => Self(path_secret_map_cleaner_cycled__entries__address__utilization),
-                287usize => {
+                295usize => Self(path_secret_map_cleaner_cycled__entries__address__retired),
+                296usize => Self(path_secret_map_cleaner_cycled__entries__address__utilization),
+                297usize => {
                     Self(path_secret_map_cleaner_cycled__entries__address__utilization__initial)
                 }
-                288usize => Self(path_secret_map_cleaner_cycled__handshake_requests),
-                289usize => Self(path_secret_map_cleaner_cycled__handshake_requests__retired),
-                290usize => Self(path_secret_map_cleaner_cycled__handshake_lock_duration),
-                291usize => Self(path_secret_map_cleaner_cycled__total_duration),
-                293usize => Self(path_secret_map_id_write_lock__acquire),
-                294usize => Self(path_secret_map_id_write_lock__duration),
-                296usize => Self(path_secret_map_address_write_lock__acquire),
-                297usize => Self(path_secret_map_address_write_lock__duration),
+                298usize => Self(path_secret_map_cleaner_cycled__handshake_requests),
+                299usize => Self(path_secret_map_cleaner_cycled__handshake_requests__retired),
+                300usize => Self(path_secret_map_cleaner_cycled__handshake_lock_duration),
+                301usize => Self(path_secret_map_cleaner_cycled__total_duration),
+                303usize => Self(path_secret_map_id_write_lock__acquire),
+                304usize => Self(path_secret_map_id_write_lock__duration),
+                306usize => Self(path_secret_map_address_write_lock__acquire),
+                307usize => Self(path_secret_map_address_write_lock__duration),
                 _ => unreachable!("invalid info: {info:?}"),
             }
         }

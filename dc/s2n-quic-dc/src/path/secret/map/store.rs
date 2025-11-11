@@ -55,6 +55,12 @@ pub trait Store: 'static + Send + Sync {
         peer: &SocketAddr,
     ) -> Option<&'a control::UnknownPathSecret>;
 
+    fn handle_mtu_probing_complete_packet<'a>(
+        &self,
+        packet: &'a control::mtu_probing_complete::Packet,
+        peer: &SocketAddr,
+    ) -> Option<&'a control::MtuProbingComplete>;
+
     fn signer(&self) -> &stateless_reset::Signer;
 
     fn send_control_packet(&self, dst: &SocketAddr, buffer: &mut [u8]);

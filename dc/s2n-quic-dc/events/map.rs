@@ -312,6 +312,63 @@ struct StaleKeyPacketDropped<'a> {
     credential_id: &'a [u8],
 }
 
+#[event("path_secret_map:mtu_probing_complete_packet_sent")]
+#[subject(endpoint)]
+/// Emitted when an MtuProbingComplete packet was sent
+struct MtuProbingCompletePacketSent<'a> {
+    #[nominal_counter("peer_address.protocol")]
+    peer_address: SocketAddress<'a>,
+
+    #[snapshot("[HIDDEN]")]
+    credential_id: &'a [u8],
+}
+
+#[event("path_secret_map:mtu_probing_complete_packet_received")]
+#[subject(endpoint)]
+/// Emitted when an MtuProbingComplete packet was received
+struct MtuProbingCompletePacketReceived<'a> {
+    #[nominal_counter("peer_address.protocol")]
+    peer_address: SocketAddress<'a>,
+
+    #[snapshot("[HIDDEN]")]
+    credential_id: &'a [u8],
+}
+
+#[event("path_secret_map:mtu_probing_complete_packet_accepted")]
+#[subject(endpoint)]
+/// Emitted when an MtuProbingComplete packet was authentic and processed
+struct MtuProbingCompletePacketAccepted<'a> {
+    #[nominal_counter("peer_address.protocol")]
+    peer_address: SocketAddress<'a>,
+
+    #[snapshot("[HIDDEN]")]
+    credential_id: &'a [u8],
+
+    mtu: u16,
+}
+
+#[event("path_secret_map:mtu_probing_complete_packet_rejected")]
+#[subject(endpoint)]
+/// Emitted when an MtuProbingComplete packet was rejected as invalid
+struct MtuProbingCompletePacketRejected<'a> {
+    #[nominal_counter("peer_address.protocol")]
+    peer_address: SocketAddress<'a>,
+
+    #[snapshot("[HIDDEN]")]
+    credential_id: &'a [u8],
+}
+
+#[event("path_secret_map:mtu_probing_complete_packet_dropped")]
+#[subject(endpoint)]
+/// Emitted when an MtuProbingComplete packet was dropped due to a missing entry
+struct MtuProbingCompletePacketDropped<'a> {
+    #[nominal_counter("peer_address.protocol")]
+    peer_address: SocketAddress<'a>,
+
+    #[snapshot("[HIDDEN]")]
+    credential_id: &'a [u8],
+}
+
 #[event("path_secret_map:address_cache_accessed")]
 #[subject(endpoint)]
 /// Emitted when the cache is accessed by peer address

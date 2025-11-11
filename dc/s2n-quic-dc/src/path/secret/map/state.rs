@@ -919,6 +919,56 @@ where
         Some(packet)
     }
 
+    fn handle_mtu_probing_complete_packet<'a>(
+        &self,
+        packet: &'a control::mtu_probing_complete::Packet,
+        peer: &SocketAddr,
+    ) -> Option<&'a control::MtuProbingComplete> {
+        let peer_address = SocketAddress::from(*peer);
+        let peer_address = peer_address.into_event();
+
+        self.subscriber().on_mtu_probing_complete_packet_received(
+            event::builder::MtuProbingCompletePacketReceived {
+                credential_id: packet.credential_id().into_event(),
+                peer_address,
+            },
+        );
+
+        let Some(entry) = self.ids.get(*packet.credential_id()) else {
+            self.subscriber().on_mtu_probing_complete_packet_dropped(
+                event::builder::MtuProbingCompletePacketDropped {
+                    credential_id: packet.credential_id().into_event(),
+                    peer_address,
+                },
+            );
+            return None;
+        };
+
+        let key = entry.control_opener();
+
+        let Some(packet) = packet.authenticate(&key) else {
+            self.subscriber().on_mtu_probing_complete_packet_rejected(
+                event::builder::MtuProbingCompletePacketRejected {
+                    credential_id: packet.credential_id().into_event(),
+                    peer_address,
+                },
+            );
+            return None;
+        };
+
+        self.subscriber().on_mtu_probing_complete_packet_accepted(
+            event::builder::MtuProbingCompletePacketAccepted {
+                credential_id: packet.credential_id.into_event(),
+                peer_address,
+                mtu: packet.mtu.into_event(),
+            },
+        );
+
+        // WHat should we do when we received a MtuProbingCompletePacket?
+
+        Some(packet)
+    }
+
     fn signer(&self) -> &stateless_reset::Signer {
         &self.signer
     }
@@ -952,6 +1002,14 @@ where
                     Ok(control::Packet::ReplayDetected(packet)) => {
                         self.subscriber().on_replay_detected_packet_sent(
                             event::builder::ReplayDetectedPacketSent {
+                                peer_address: SocketAddress::from(*dst).into_event(),
+                                credential_id: packet.credential_id().into_event(),
+                            },
+                        );
+                    }
+                    Ok(control::Packet::MtuProbingComplete(packet)) => {
+                        self.subscriber().on_mtu_probing_complete_packet_sent(
+                            event::builder::MtuProbingCompletePacketSent {
                                 peer_address: SocketAddress::from(*dst).into_event(),
                                 credential_id: packet.credential_id().into_event(),
                             },

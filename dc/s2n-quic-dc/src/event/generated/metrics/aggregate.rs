@@ -13,7 +13,7 @@ use crate::event::{
     },
 };
 use core::sync::atomic::{AtomicU64, Ordering};
-static INFO: &[Info; 298usize] = &[
+static INFO: &[Info; 308usize] = &[
     info::Builder {
         id: 0usize,
         name: Str::new("acceptor_tcp_started\0"),
@@ -1606,198 +1606,258 @@ static INFO: &[Info; 298usize] = &[
     .build(),
     info::Builder {
         id: 265usize,
-        name: Str::new("path_secret_map_address_cache_accessed\0"),
+        name: Str::new("mtu_probing_complete_packet_sent\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 266usize,
-        name: Str::new("path_secret_map_address_cache_accessed.peer_address.protocol\0"),
+        name: Str::new("mtu_probing_complete_packet_sent.peer_address.protocol\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 267usize,
-        name: Str::new("path_secret_map_address_cache_accessed.hit\0"),
+        name: Str::new("mtu_probing_complete_packet_received\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 268usize,
-        name: Str::new("path_secret_map_address_cache_accessed_hit\0"),
+        name: Str::new("mtu_probing_complete_packet_received.peer_address.protocol\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 269usize,
-        name: Str::new("path_secret_map_address_cache_accessed_hit.peer_address.protocol\0"),
+        name: Str::new("mtu_probing_complete_packet_accepted\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 270usize,
-        name: Str::new("path_secret_map_address_cache_accessed_hit.age\0"),
-        units: Units::Duration,
+        name: Str::new("mtu_probing_complete_packet_accepted.peer_address.protocol\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 271usize,
-        name: Str::new("path_secret_map_id_cache_accessed\0"),
+        name: Str::new("mtu_probing_complete_packet_rejected\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 272usize,
-        name: Str::new("path_secret_map_id_cache_accessed.hit\0"),
+        name: Str::new("mtu_probing_complete_packet_rejected.peer_address.protocol\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 273usize,
-        name: Str::new("path_secret_map_id_cache_accessed_hit\0"),
+        name: Str::new("mtu_probing_complete_packet_dropped\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 274usize,
-        name: Str::new("path_secret_map_id_cache_accessed_hit.age\0"),
-        units: Units::Duration,
+        name: Str::new("mtu_probing_complete_packet_dropped.peer_address.protocol\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 275usize,
-        name: Str::new("path_secret_map_cleaner_cycled\0"),
+        name: Str::new("path_secret_map_address_cache_accessed\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 276usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id\0"),
+        name: Str::new("path_secret_map_address_cache_accessed.peer_address.protocol\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 277usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id.retired\0"),
+        name: Str::new("path_secret_map_address_cache_accessed.hit\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 278usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id.active\0"),
+        name: Str::new("path_secret_map_address_cache_accessed_hit\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 279usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id.active.utilization\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_address_cache_accessed_hit.peer_address.protocol\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 280usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id.utilization\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_address_cache_accessed_hit.age\0"),
+        units: Units::Duration,
     }
     .build(),
     info::Builder {
         id: 281usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.id.utilization.initial\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_id_cache_accessed\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 282usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address\0"),
+        name: Str::new("path_secret_map_id_cache_accessed.hit\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 283usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address.active\0"),
+        name: Str::new("path_secret_map_id_cache_accessed_hit\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 284usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address.active.utilization\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_id_cache_accessed_hit.age\0"),
+        units: Units::Duration,
     }
     .build(),
     info::Builder {
         id: 285usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address.retired\0"),
+        name: Str::new("path_secret_map_cleaner_cycled\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 286usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address.utilization\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 287usize,
-        name: Str::new("path_secret_map_cleaner_cycled.entries.address.utilization.initial\0"),
-        units: Units::Percent,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id.retired\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 288usize,
-        name: Str::new("path_secret_map_cleaner_cycled.handshake_requests\0"),
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id.active\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 289usize,
-        name: Str::new("path_secret_map_cleaner_cycled.handshake_requests.retired\0"),
-        units: Units::None,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id.active.utilization\0"),
+        units: Units::Percent,
     }
     .build(),
     info::Builder {
         id: 290usize,
-        name: Str::new("path_secret_map_cleaner_cycled.handshake_lock_duration\0"),
-        units: Units::Duration,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id.utilization\0"),
+        units: Units::Percent,
     }
     .build(),
     info::Builder {
         id: 291usize,
-        name: Str::new("path_secret_map_cleaner_cycled.total_duration\0"),
-        units: Units::Duration,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.id.utilization.initial\0"),
+        units: Units::Percent,
     }
     .build(),
     info::Builder {
         id: 292usize,
-        name: Str::new("path_secret_map_id_write_lock\0"),
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 293usize,
-        name: Str::new("path_secret_map_id_write_lock.acquire\0"),
-        units: Units::Duration,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address.active\0"),
+        units: Units::None,
     }
     .build(),
     info::Builder {
         id: 294usize,
-        name: Str::new("path_secret_map_id_write_lock.duration\0"),
-        units: Units::Duration,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address.active.utilization\0"),
+        units: Units::Percent,
     }
     .build(),
     info::Builder {
         id: 295usize,
-        name: Str::new("path_secret_map_address_write_lock\0"),
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address.retired\0"),
         units: Units::None,
     }
     .build(),
     info::Builder {
         id: 296usize,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address.utilization\0"),
+        units: Units::Percent,
+    }
+    .build(),
+    info::Builder {
+        id: 297usize,
+        name: Str::new("path_secret_map_cleaner_cycled.entries.address.utilization.initial\0"),
+        units: Units::Percent,
+    }
+    .build(),
+    info::Builder {
+        id: 298usize,
+        name: Str::new("path_secret_map_cleaner_cycled.handshake_requests\0"),
+        units: Units::None,
+    }
+    .build(),
+    info::Builder {
+        id: 299usize,
+        name: Str::new("path_secret_map_cleaner_cycled.handshake_requests.retired\0"),
+        units: Units::None,
+    }
+    .build(),
+    info::Builder {
+        id: 300usize,
+        name: Str::new("path_secret_map_cleaner_cycled.handshake_lock_duration\0"),
+        units: Units::Duration,
+    }
+    .build(),
+    info::Builder {
+        id: 301usize,
+        name: Str::new("path_secret_map_cleaner_cycled.total_duration\0"),
+        units: Units::Duration,
+    }
+    .build(),
+    info::Builder {
+        id: 302usize,
+        name: Str::new("path_secret_map_id_write_lock\0"),
+        units: Units::None,
+    }
+    .build(),
+    info::Builder {
+        id: 303usize,
+        name: Str::new("path_secret_map_id_write_lock.acquire\0"),
+        units: Units::Duration,
+    }
+    .build(),
+    info::Builder {
+        id: 304usize,
+        name: Str::new("path_secret_map_id_write_lock.duration\0"),
+        units: Units::Duration,
+    }
+    .build(),
+    info::Builder {
+        id: 305usize,
+        name: Str::new("path_secret_map_address_write_lock\0"),
+        units: Units::None,
+    }
+    .build(),
+    info::Builder {
+        id: 306usize,
         name: Str::new("path_secret_map_address_write_lock.acquire\0"),
         units: Units::Duration,
     }
     .build(),
     info::Builder {
-        id: 297usize,
+        id: 307usize,
         name: Str::new("path_secret_map_address_write_lock.duration\0"),
         units: Units::Duration,
     }
@@ -1839,13 +1899,13 @@ pub struct ConnectionContext {
 }
 pub struct Subscriber<R: Registry> {
     #[allow(dead_code)]
-    counters: Box<[R::Counter; 101usize]>,
+    counters: Box<[R::Counter; 106usize]>,
     #[allow(dead_code)]
     bool_counters: Box<[R::BoolCounter; 21usize]>,
     #[allow(dead_code)]
     nominal_counters: Box<[R::NominalCounter]>,
     #[allow(dead_code)]
-    nominal_counter_offsets: Box<[usize; 32usize]>,
+    nominal_counter_offsets: Box<[usize; 37usize]>,
     #[allow(dead_code)]
     measures: Box<[R::Measure; 124usize]>,
     #[allow(dead_code)]
@@ -1874,10 +1934,10 @@ impl<R: Registry> Subscriber<R> {
     #[allow(unused_mut)]
     #[inline]
     pub fn new(registry: R) -> Self {
-        let mut counters = Vec::with_capacity(101usize);
+        let mut counters = Vec::with_capacity(106usize);
         let mut bool_counters = Vec::with_capacity(21usize);
-        let mut nominal_counters = Vec::with_capacity(32usize);
-        let mut nominal_counter_offsets = Vec::with_capacity(32usize);
+        let mut nominal_counters = Vec::with_capacity(37usize);
+        let mut nominal_counter_offsets = Vec::with_capacity(37usize);
         let mut measures = Vec::with_capacity(124usize);
         let mut gauges = Vec::with_capacity(0usize);
         let mut timers = Vec::with_capacity(20usize);
@@ -1978,12 +2038,17 @@ impl<R: Registry> Subscriber<R> {
         counters.push(registry.register_counter(&INFO[261usize]));
         counters.push(registry.register_counter(&INFO[263usize]));
         counters.push(registry.register_counter(&INFO[265usize]));
-        counters.push(registry.register_counter(&INFO[268usize]));
+        counters.push(registry.register_counter(&INFO[267usize]));
+        counters.push(registry.register_counter(&INFO[269usize]));
         counters.push(registry.register_counter(&INFO[271usize]));
         counters.push(registry.register_counter(&INFO[273usize]));
         counters.push(registry.register_counter(&INFO[275usize]));
-        counters.push(registry.register_counter(&INFO[292usize]));
-        counters.push(registry.register_counter(&INFO[295usize]));
+        counters.push(registry.register_counter(&INFO[278usize]));
+        counters.push(registry.register_counter(&INFO[281usize]));
+        counters.push(registry.register_counter(&INFO[283usize]));
+        counters.push(registry.register_counter(&INFO[285usize]));
+        counters.push(registry.register_counter(&INFO[302usize]));
+        counters.push(registry.register_counter(&INFO[305usize]));
         bool_counters.push(registry.register_bool_counter(&INFO[19usize]));
         bool_counters.push(registry.register_bool_counter(&INFO[20usize]));
         bool_counters.push(registry.register_bool_counter(&INFO[42usize]));
@@ -2003,8 +2068,8 @@ impl<R: Registry> Subscriber<R> {
         bool_counters.push(registry.register_bool_counter(&INFO[200usize]));
         bool_counters.push(registry.register_bool_counter(&INFO[207usize]));
         bool_counters.push(registry.register_bool_counter(&INFO[208usize]));
-        bool_counters.push(registry.register_bool_counter(&INFO[267usize]));
-        bool_counters.push(registry.register_bool_counter(&INFO[272usize]));
+        bool_counters.push(registry.register_bool_counter(&INFO[277usize]));
+        bool_counters.push(registry.register_bool_counter(&INFO[282usize]));
         {
             #[allow(unused_imports)]
             use api::*;
@@ -2354,7 +2419,62 @@ impl<R: Registry> Subscriber<R> {
                 let mut count = 0;
                 for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
                     nominal_counters
-                        .push(registry.register_nominal_counter(&INFO[269usize], variant));
+                        .push(registry.register_nominal_counter(&INFO[268usize], variant));
+                    count += 1;
+                }
+                debug_assert_ne!(count, 0, "field type needs at least one variant");
+                nominal_counter_offsets.push(offset);
+            }
+            {
+                let offset = nominal_counters.len();
+                let mut count = 0;
+                for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
+                    nominal_counters
+                        .push(registry.register_nominal_counter(&INFO[270usize], variant));
+                    count += 1;
+                }
+                debug_assert_ne!(count, 0, "field type needs at least one variant");
+                nominal_counter_offsets.push(offset);
+            }
+            {
+                let offset = nominal_counters.len();
+                let mut count = 0;
+                for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
+                    nominal_counters
+                        .push(registry.register_nominal_counter(&INFO[272usize], variant));
+                    count += 1;
+                }
+                debug_assert_ne!(count, 0, "field type needs at least one variant");
+                nominal_counter_offsets.push(offset);
+            }
+            {
+                let offset = nominal_counters.len();
+                let mut count = 0;
+                for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
+                    nominal_counters
+                        .push(registry.register_nominal_counter(&INFO[274usize], variant));
+                    count += 1;
+                }
+                debug_assert_ne!(count, 0, "field type needs at least one variant");
+                nominal_counter_offsets.push(offset);
+            }
+            {
+                let offset = nominal_counters.len();
+                let mut count = 0;
+                for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
+                    nominal_counters
+                        .push(registry.register_nominal_counter(&INFO[276usize], variant));
+                    count += 1;
+                }
+                debug_assert_ne!(count, 0, "field type needs at least one variant");
+                nominal_counter_offsets.push(offset);
+            }
+            {
+                let offset = nominal_counters.len();
+                let mut count = 0;
+                for variant in <SocketAddress as AsVariant>::VARIANTS.iter() {
+                    nominal_counters
+                        .push(registry.register_nominal_counter(&INFO[279usize], variant));
                     count += 1;
                 }
                 debug_assert_ne!(count, 0, "field type needs at least one variant");
@@ -2463,28 +2583,28 @@ impl<R: Registry> Subscriber<R> {
         measures.push(registry.register_measure(&INFO[240usize]));
         measures.push(registry.register_measure(&INFO[241usize]));
         measures.push(registry.register_measure(&INFO[244usize]));
-        measures.push(registry.register_measure(&INFO[270usize]));
-        measures.push(registry.register_measure(&INFO[274usize]));
-        measures.push(registry.register_measure(&INFO[276usize]));
-        measures.push(registry.register_measure(&INFO[277usize]));
-        measures.push(registry.register_measure(&INFO[278usize]));
-        measures.push(registry.register_measure(&INFO[279usize]));
         measures.push(registry.register_measure(&INFO[280usize]));
-        measures.push(registry.register_measure(&INFO[281usize]));
-        measures.push(registry.register_measure(&INFO[282usize]));
-        measures.push(registry.register_measure(&INFO[283usize]));
         measures.push(registry.register_measure(&INFO[284usize]));
-        measures.push(registry.register_measure(&INFO[285usize]));
         measures.push(registry.register_measure(&INFO[286usize]));
         measures.push(registry.register_measure(&INFO[287usize]));
         measures.push(registry.register_measure(&INFO[288usize]));
         measures.push(registry.register_measure(&INFO[289usize]));
         measures.push(registry.register_measure(&INFO[290usize]));
         measures.push(registry.register_measure(&INFO[291usize]));
+        measures.push(registry.register_measure(&INFO[292usize]));
         measures.push(registry.register_measure(&INFO[293usize]));
         measures.push(registry.register_measure(&INFO[294usize]));
+        measures.push(registry.register_measure(&INFO[295usize]));
         measures.push(registry.register_measure(&INFO[296usize]));
         measures.push(registry.register_measure(&INFO[297usize]));
+        measures.push(registry.register_measure(&INFO[298usize]));
+        measures.push(registry.register_measure(&INFO[299usize]));
+        measures.push(registry.register_measure(&INFO[300usize]));
+        measures.push(registry.register_measure(&INFO[301usize]));
+        measures.push(registry.register_measure(&INFO[303usize]));
+        measures.push(registry.register_measure(&INFO[304usize]));
+        measures.push(registry.register_measure(&INFO[306usize]));
+        measures.push(registry.register_measure(&INFO[307usize]));
         timers.push(registry.register_timer(&INFO[5usize]));
         timers.push(registry.register_timer(&INFO[15usize]));
         timers.push(registry.register_timer(&INFO[21usize]));
@@ -2634,12 +2754,17 @@ impl<R: Registry> Subscriber<R> {
                 92usize => (&INFO[261usize], entry),
                 93usize => (&INFO[263usize], entry),
                 94usize => (&INFO[265usize], entry),
-                95usize => (&INFO[268usize], entry),
-                96usize => (&INFO[271usize], entry),
-                97usize => (&INFO[273usize], entry),
-                98usize => (&INFO[275usize], entry),
-                99usize => (&INFO[292usize], entry),
-                100usize => (&INFO[295usize], entry),
+                95usize => (&INFO[267usize], entry),
+                96usize => (&INFO[269usize], entry),
+                97usize => (&INFO[271usize], entry),
+                98usize => (&INFO[273usize], entry),
+                99usize => (&INFO[275usize], entry),
+                100usize => (&INFO[278usize], entry),
+                101usize => (&INFO[281usize], entry),
+                102usize => (&INFO[283usize], entry),
+                103usize => (&INFO[285usize], entry),
+                104usize => (&INFO[302usize], entry),
+                105usize => (&INFO[305usize], entry),
                 _ => unsafe { core::hint::unreachable_unchecked() },
             })
     }
@@ -2676,8 +2801,8 @@ impl<R: Registry> Subscriber<R> {
                 16usize => (&INFO[200usize], entry),
                 17usize => (&INFO[207usize], entry),
                 18usize => (&INFO[208usize], entry),
-                19usize => (&INFO[267usize], entry),
-                20usize => (&INFO[272usize], entry),
+                19usize => (&INFO[277usize], entry),
+                20usize => (&INFO[282usize], entry),
                 _ => unsafe { core::hint::unreachable_unchecked() },
             })
     }
@@ -2889,7 +3014,37 @@ impl<R: Registry> Subscriber<R> {
                     let offset = *entry;
                     let variants = <SocketAddress as AsVariant>::VARIANTS;
                     let entries = &self.nominal_counters[offset..offset + variants.len()];
-                    (&INFO[269usize], entries, variants)
+                    (&INFO[268usize], entries, variants)
+                }
+                32usize => {
+                    let offset = *entry;
+                    let variants = <SocketAddress as AsVariant>::VARIANTS;
+                    let entries = &self.nominal_counters[offset..offset + variants.len()];
+                    (&INFO[270usize], entries, variants)
+                }
+                33usize => {
+                    let offset = *entry;
+                    let variants = <SocketAddress as AsVariant>::VARIANTS;
+                    let entries = &self.nominal_counters[offset..offset + variants.len()];
+                    (&INFO[272usize], entries, variants)
+                }
+                34usize => {
+                    let offset = *entry;
+                    let variants = <SocketAddress as AsVariant>::VARIANTS;
+                    let entries = &self.nominal_counters[offset..offset + variants.len()];
+                    (&INFO[274usize], entries, variants)
+                }
+                35usize => {
+                    let offset = *entry;
+                    let variants = <SocketAddress as AsVariant>::VARIANTS;
+                    let entries = &self.nominal_counters[offset..offset + variants.len()];
+                    (&INFO[276usize], entries, variants)
+                }
+                36usize => {
+                    let offset = *entry;
+                    let variants = <SocketAddress as AsVariant>::VARIANTS;
+                    let entries = &self.nominal_counters[offset..offset + variants.len()];
+                    (&INFO[279usize], entries, variants)
                 }
                 _ => unsafe { core::hint::unreachable_unchecked() },
             })
@@ -3011,28 +3166,28 @@ impl<R: Registry> Subscriber<R> {
                 99usize => (&INFO[240usize], entry),
                 100usize => (&INFO[241usize], entry),
                 101usize => (&INFO[244usize], entry),
-                102usize => (&INFO[270usize], entry),
-                103usize => (&INFO[274usize], entry),
-                104usize => (&INFO[276usize], entry),
-                105usize => (&INFO[277usize], entry),
-                106usize => (&INFO[278usize], entry),
-                107usize => (&INFO[279usize], entry),
-                108usize => (&INFO[280usize], entry),
-                109usize => (&INFO[281usize], entry),
-                110usize => (&INFO[282usize], entry),
-                111usize => (&INFO[283usize], entry),
-                112usize => (&INFO[284usize], entry),
-                113usize => (&INFO[285usize], entry),
-                114usize => (&INFO[286usize], entry),
-                115usize => (&INFO[287usize], entry),
-                116usize => (&INFO[288usize], entry),
-                117usize => (&INFO[289usize], entry),
-                118usize => (&INFO[290usize], entry),
-                119usize => (&INFO[291usize], entry),
-                120usize => (&INFO[293usize], entry),
-                121usize => (&INFO[294usize], entry),
-                122usize => (&INFO[296usize], entry),
-                123usize => (&INFO[297usize], entry),
+                102usize => (&INFO[280usize], entry),
+                103usize => (&INFO[284usize], entry),
+                104usize => (&INFO[286usize], entry),
+                105usize => (&INFO[287usize], entry),
+                106usize => (&INFO[288usize], entry),
+                107usize => (&INFO[289usize], entry),
+                108usize => (&INFO[290usize], entry),
+                109usize => (&INFO[291usize], entry),
+                110usize => (&INFO[292usize], entry),
+                111usize => (&INFO[293usize], entry),
+                112usize => (&INFO[294usize], entry),
+                113usize => (&INFO[295usize], entry),
+                114usize => (&INFO[296usize], entry),
+                115usize => (&INFO[297usize], entry),
+                116usize => (&INFO[298usize], entry),
+                117usize => (&INFO[299usize], entry),
+                118usize => (&INFO[300usize], entry),
+                119usize => (&INFO[301usize], entry),
+                120usize => (&INFO[303usize], entry),
+                121usize => (&INFO[304usize], entry),
+                122usize => (&INFO[306usize], entry),
+                123usize => (&INFO[307usize], entry),
                 _ => unsafe { core::hint::unreachable_unchecked() },
             })
     }
@@ -4478,6 +4633,71 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
         let _ = meta;
     }
     #[inline]
+    fn on_mtu_probing_complete_packet_sent(
+        &self,
+        meta: &api::EndpointMeta,
+        event: &api::MtuProbingCompletePacketSent,
+    ) {
+        #[allow(unused_imports)]
+        use api::*;
+        self.count(265usize, 94usize, 1usize);
+        self.count_nominal(266usize, 30usize, &event.peer_address);
+        let _ = event;
+        let _ = meta;
+    }
+    #[inline]
+    fn on_mtu_probing_complete_packet_received(
+        &self,
+        meta: &api::EndpointMeta,
+        event: &api::MtuProbingCompletePacketReceived,
+    ) {
+        #[allow(unused_imports)]
+        use api::*;
+        self.count(267usize, 95usize, 1usize);
+        self.count_nominal(268usize, 31usize, &event.peer_address);
+        let _ = event;
+        let _ = meta;
+    }
+    #[inline]
+    fn on_mtu_probing_complete_packet_accepted(
+        &self,
+        meta: &api::EndpointMeta,
+        event: &api::MtuProbingCompletePacketAccepted,
+    ) {
+        #[allow(unused_imports)]
+        use api::*;
+        self.count(269usize, 96usize, 1usize);
+        self.count_nominal(270usize, 32usize, &event.peer_address);
+        let _ = event;
+        let _ = meta;
+    }
+    #[inline]
+    fn on_mtu_probing_complete_packet_rejected(
+        &self,
+        meta: &api::EndpointMeta,
+        event: &api::MtuProbingCompletePacketRejected,
+    ) {
+        #[allow(unused_imports)]
+        use api::*;
+        self.count(271usize, 97usize, 1usize);
+        self.count_nominal(272usize, 33usize, &event.peer_address);
+        let _ = event;
+        let _ = meta;
+    }
+    #[inline]
+    fn on_mtu_probing_complete_packet_dropped(
+        &self,
+        meta: &api::EndpointMeta,
+        event: &api::MtuProbingCompletePacketDropped,
+    ) {
+        #[allow(unused_imports)]
+        use api::*;
+        self.count(273usize, 98usize, 1usize);
+        self.count_nominal(274usize, 34usize, &event.peer_address);
+        let _ = event;
+        let _ = meta;
+    }
+    #[inline]
     fn on_path_secret_map_address_cache_accessed(
         &self,
         meta: &api::EndpointMeta,
@@ -4485,9 +4705,9 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(265usize, 94usize, 1usize);
-        self.count_nominal(266usize, 30usize, &event.peer_address);
-        self.count_bool(267usize, 19usize, event.hit);
+        self.count(275usize, 99usize, 1usize);
+        self.count_nominal(276usize, 35usize, &event.peer_address);
+        self.count_bool(277usize, 19usize, event.hit);
         let _ = event;
         let _ = meta;
     }
@@ -4499,9 +4719,9 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(268usize, 95usize, 1usize);
-        self.count_nominal(269usize, 31usize, &event.peer_address);
-        self.measure(270usize, 102usize, event.age);
+        self.count(278usize, 100usize, 1usize);
+        self.count_nominal(279usize, 36usize, &event.peer_address);
+        self.measure(280usize, 102usize, event.age);
         let _ = event;
         let _ = meta;
     }
@@ -4513,8 +4733,8 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(271usize, 96usize, 1usize);
-        self.count_bool(272usize, 20usize, event.hit);
+        self.count(281usize, 101usize, 1usize);
+        self.count_bool(282usize, 20usize, event.hit);
         let _ = event;
         let _ = meta;
     }
@@ -4526,8 +4746,8 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(273usize, 97usize, 1usize);
-        self.measure(274usize, 103usize, event.age);
+        self.count(283usize, 102usize, 1usize);
+        self.measure(284usize, 103usize, event.age);
         let _ = event;
         let _ = meta;
     }
@@ -4539,27 +4759,27 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(275usize, 98usize, 1usize);
-        self.measure(276usize, 104usize, event.id_entries);
-        self.measure(277usize, 105usize, event.id_entries_retired);
-        self.measure(278usize, 106usize, event.id_entries_active);
-        self.measure(279usize, 107usize, event.id_entries_active_utilization);
-        self.measure(280usize, 108usize, event.id_entries_utilization);
-        self.measure(281usize, 109usize, event.id_entries_initial_utilization);
-        self.measure(282usize, 110usize, event.address_entries);
-        self.measure(283usize, 111usize, event.address_entries_active);
-        self.measure(284usize, 112usize, event.address_entries_active_utilization);
-        self.measure(285usize, 113usize, event.address_entries_retired);
-        self.measure(286usize, 114usize, event.address_entries_utilization);
+        self.count(285usize, 103usize, 1usize);
+        self.measure(286usize, 104usize, event.id_entries);
+        self.measure(287usize, 105usize, event.id_entries_retired);
+        self.measure(288usize, 106usize, event.id_entries_active);
+        self.measure(289usize, 107usize, event.id_entries_active_utilization);
+        self.measure(290usize, 108usize, event.id_entries_utilization);
+        self.measure(291usize, 109usize, event.id_entries_initial_utilization);
+        self.measure(292usize, 110usize, event.address_entries);
+        self.measure(293usize, 111usize, event.address_entries_active);
+        self.measure(294usize, 112usize, event.address_entries_active_utilization);
+        self.measure(295usize, 113usize, event.address_entries_retired);
+        self.measure(296usize, 114usize, event.address_entries_utilization);
         self.measure(
-            287usize,
+            297usize,
             115usize,
             event.address_entries_initial_utilization,
         );
-        self.measure(288usize, 116usize, event.handshake_requests);
-        self.measure(289usize, 117usize, event.handshake_requests_retired);
-        self.measure(290usize, 118usize, event.handshake_lock_duration);
-        self.measure(291usize, 119usize, event.duration);
+        self.measure(298usize, 116usize, event.handshake_requests);
+        self.measure(299usize, 117usize, event.handshake_requests_retired);
+        self.measure(300usize, 118usize, event.handshake_lock_duration);
+        self.measure(301usize, 119usize, event.duration);
         let _ = event;
         let _ = meta;
     }
@@ -4571,9 +4791,9 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(292usize, 99usize, 1usize);
-        self.measure(293usize, 120usize, event.acquire);
-        self.measure(294usize, 121usize, event.duration);
+        self.count(302usize, 104usize, 1usize);
+        self.measure(303usize, 120usize, event.acquire);
+        self.measure(304usize, 121usize, event.duration);
         let _ = event;
         let _ = meta;
     }
@@ -4585,9 +4805,9 @@ impl<R: Registry> event::Subscriber for Subscriber<R> {
     ) {
         #[allow(unused_imports)]
         use api::*;
-        self.count(295usize, 100usize, 1usize);
-        self.measure(296usize, 122usize, event.acquire);
-        self.measure(297usize, 123usize, event.duration);
+        self.count(305usize, 105usize, 1usize);
+        self.measure(306usize, 122usize, event.acquire);
+        self.measure(307usize, 123usize, event.duration);
         let _ = event;
         let _ = meta;
     }

@@ -215,8 +215,8 @@ impl Map {
             control::Packet::UnknownPathSecret(packet) => {
                 let _ = self.handle_unknown_path_secret_packet(packet, peer);
             }
-            control::packet::MtuProbingComplete(packet) => {
-                let _ = self.handle_mtu
+            control::Packet::MtuProbingComplete(packet) => {
+                let _ = self.handle_mtu_probing_complete(packet, peer);
             }
         }
     }
@@ -245,9 +245,12 @@ impl Map {
         self.store.handle_unknown_path_secret_packet(packet, peer)
     }
 
-    pub fn handle_mtu_probing_complete<'a> {
+    pub fn handle_mtu_probing_complete<'a>(
         &self,
-        packet: 
+        packet: &'a control::mtu_probing_complete::Packet,
+        peer: &SocketAddr,
+    ) -> Option<&'a control::MtuProbingComplete> {
+        self.store.handle_mtu_probing_complete_packet(packet, peer)
     }
 
     #[doc(hidden)]
