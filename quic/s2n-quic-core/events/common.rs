@@ -371,6 +371,9 @@ enum Frame {
         len: u16,
     },
     DcStatelessResetTokens,
+    MtuProbingComplete {
+        mtu: u16,
+    },
 }
 
 impl IntoEvent<builder::Frame> for &crate::frame::Padding {

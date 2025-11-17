@@ -419,6 +419,8 @@ pub mod api {
         Datagram { len: u16 },
         #[non_exhaustive]
         DcStatelessResetTokens {},
+        #[non_exhaustive]
+        MtuProbingComplete { mtu: u16 },
     }
     impl aggregate::AsVariant for Frame {
         const VARIANTS: &'static [aggregate::info::Variant] = &[
@@ -532,6 +534,11 @@ pub mod api {
                 id: 21usize,
             }
             .build(),
+            aggregate::info::variant::Builder {
+                name: aggregate::info::Str::new("MTU_PROBING_COMPLETE\0"),
+                id: 22usize,
+            }
+            .build(),
         ];
         #[inline]
         fn variant_idx(&self) -> usize {
@@ -558,6 +565,7 @@ pub mod api {
                 Self::HandshakeDone { .. } => 19usize,
                 Self::Datagram { .. } => 20usize,
                 Self::DcStatelessResetTokens { .. } => 21usize,
+                Self::MtuProbingComplete { .. } => 22usize,
             }
         }
     }
@@ -3194,7 +3202,7 @@ pub mod api {
         }
     }
     macro_rules! impl_conn_id {
-        ($name:ident) => {
+        ($ name : ident) => {
             impl<'a> IntoEvent<builder::ConnectionId<'a>> for &'a crate::connection::id::$name {
                 #[inline]
                 fn into_event(self) -> builder::ConnectionId<'a> {
@@ -4899,6 +4907,9 @@ pub mod builder {
             len: u16,
         },
         DcStatelessResetTokens,
+        MtuProbingComplete {
+            mtu: u16,
+        },
     }
     impl IntoEvent<api::Frame> for Frame {
         #[inline]
@@ -4994,6 +5005,9 @@ pub mod builder {
                     len: len.into_event(),
                 },
                 Self::DcStatelessResetTokens => DcStatelessResetTokens {},
+                Self::MtuProbingComplete { mtu } => MtuProbingComplete {
+                    mtu: mtu.into_event(),
+                },
             }
         }
     }
@@ -6962,7 +6976,8 @@ pub mod supervisor {
 pub use traits::*;
 mod traits {
     use super::*;
-    use crate::{event::Meta, query};
+    use crate::event::Meta;
+    use crate::query;
     use core::fmt;
     #[doc = r" Allows for events to be subscribed to"]
     pub trait Subscriber: 'static + Send {
