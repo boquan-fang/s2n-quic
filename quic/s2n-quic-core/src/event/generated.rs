@@ -419,6 +419,8 @@ pub mod api {
         Datagram { len: u16 },
         #[non_exhaustive]
         DcStatelessResetTokens {},
+        #[non_exhaustive]
+        MtuProbingComplete { mtu: u16 },
     }
     impl aggregate::AsVariant for Frame {
         const VARIANTS: &'static [aggregate::info::Variant] = &[
@@ -532,6 +534,11 @@ pub mod api {
                 id: 21usize,
             }
             .build(),
+            aggregate::info::variant::Builder {
+                name: aggregate::info::Str::new("MTU_PROBING_COMPLETE\0"),
+                id: 22usize,
+            }
+            .build(),
         ];
         #[inline]
         fn variant_idx(&self) -> usize {
@@ -558,6 +565,7 @@ pub mod api {
                 Self::HandshakeDone { .. } => 19usize,
                 Self::Datagram { .. } => 20usize,
                 Self::DcStatelessResetTokens { .. } => 21usize,
+                Self::MtuProbingComplete { .. } => 22usize,
             }
         }
     }
@@ -2610,6 +2618,28 @@ pub mod api {
     }
     #[derive(Clone, Debug)]
     #[non_exhaustive]
+    #[doc = " MTU_PROBING_COMPLETE frame was received"]
+    pub struct MtuProbingCompleteReceived<'a> {
+        pub packet_header: PacketHeader,
+        pub path: Path<'a>,
+        #[doc = " The confirmed MTU value from the frame"]
+        pub mtu: u16,
+    }
+    #[cfg(any(test, feature = "testing"))]
+    impl<'a> crate::event::snapshot::Fmt for MtuProbingCompleteReceived<'a> {
+        fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
+            let mut fmt = fmt.debug_struct("MtuProbingCompleteReceived");
+            fmt.field("packet_header", &self.packet_header);
+            fmt.field("path", &self.path);
+            fmt.field("mtu", &self.mtu);
+            fmt.finish()
+        }
+    }
+    impl<'a> Event for MtuProbingCompleteReceived<'a> {
+        const NAME: &'static str = "transport:mtu_probing_complete_received";
+    }
+    #[derive(Clone, Debug)]
+    #[non_exhaustive]
     #[doc = " The slow start congestion controller state has been exited"]
     pub struct SlowStartExited {
         pub path_id: u64,
@@ -4224,6 +4254,21 @@ pub mod tracing {
             tracing :: event ! (target : "mtu_updated" , parent : id , tracing :: Level :: DEBUG , { path_id = tracing :: field :: debug (path_id) , mtu = tracing :: field :: debug (mtu) , cause = tracing :: field :: debug (cause) , search_complete = tracing :: field :: debug (search_complete) });
         }
         #[inline]
+        fn on_mtu_probing_complete_received(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            _meta: &api::ConnectionMeta,
+            event: &api::MtuProbingCompleteReceived,
+        ) {
+            let id = context.id();
+            let api::MtuProbingCompleteReceived {
+                packet_header,
+                path,
+                mtu,
+            } = event;
+            tracing :: event ! (target : "mtu_probing_complete_received" , parent : id , tracing :: Level :: DEBUG , { packet_header = tracing :: field :: debug (packet_header) , path = tracing :: field :: debug (path) , mtu = tracing :: field :: debug (mtu) });
+        }
+        #[inline]
         fn on_slow_start_exited(
             &mut self,
             context: &mut Self::ConnectionContext,
@@ -4899,6 +4944,9 @@ pub mod builder {
             len: u16,
         },
         DcStatelessResetTokens,
+        MtuProbingComplete {
+            mtu: u16,
+        },
     }
     impl IntoEvent<api::Frame> for Frame {
         #[inline]
@@ -4994,6 +5042,9 @@ pub mod builder {
                     len: len.into_event(),
                 },
                 Self::DcStatelessResetTokens => DcStatelessResetTokens {},
+                Self::MtuProbingComplete { mtu } => MtuProbingComplete {
+                    mtu: mtu.into_event(),
+                },
             }
         }
     }
@@ -6429,6 +6480,29 @@ pub mod builder {
         }
     }
     #[derive(Clone, Debug)]
+    #[doc = " MTU_PROBING_COMPLETE frame was received"]
+    pub struct MtuProbingCompleteReceived<'a> {
+        pub packet_header: PacketHeader,
+        pub path: Path<'a>,
+        #[doc = " The confirmed MTU value from the frame"]
+        pub mtu: u16,
+    }
+    impl<'a> IntoEvent<api::MtuProbingCompleteReceived<'a>> for MtuProbingCompleteReceived<'a> {
+        #[inline]
+        fn into_event(self) -> api::MtuProbingCompleteReceived<'a> {
+            let MtuProbingCompleteReceived {
+                packet_header,
+                path,
+                mtu,
+            } = self;
+            api::MtuProbingCompleteReceived {
+                packet_header: packet_header.into_event(),
+                path: path.into_event(),
+                mtu: mtu.into_event(),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
     #[doc = " The slow start congestion controller state has been exited"]
     pub struct SlowStartExited {
         pub path_id: u64,
@@ -7543,6 +7617,18 @@ mod traits {
             let _ = meta;
             let _ = event;
         }
+        #[doc = "Called when the `MtuProbingCompleteReceived` event is triggered"]
+        #[inline]
+        fn on_mtu_probing_complete_received(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            meta: &api::ConnectionMeta,
+            event: &api::MtuProbingCompleteReceived,
+        ) {
+            let _ = context;
+            let _ = meta;
+            let _ = event;
+        }
         #[doc = "Called when the `SlowStartExited` event is triggered"]
         #[inline]
         fn on_slow_start_exited(
@@ -8281,6 +8367,16 @@ mod traits {
             (self.1).on_mtu_updated(&mut context.1, meta, event);
         }
         #[inline]
+        fn on_mtu_probing_complete_received(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            meta: &api::ConnectionMeta,
+            event: &api::MtuProbingCompleteReceived,
+        ) {
+            (self.0).on_mtu_probing_complete_received(&mut context.0, meta, event);
+            (self.1).on_mtu_probing_complete_received(&mut context.1, meta, event);
+        }
+        #[inline]
         fn on_slow_start_exited(
             &mut self,
             context: &mut Self::ConnectionContext,
@@ -8793,6 +8889,8 @@ mod traits {
         fn on_keep_alive_timer_expired(&mut self, event: builder::KeepAliveTimerExpired);
         #[doc = "Publishes a `MtuUpdated` event to the publisher's subscriber"]
         fn on_mtu_updated(&mut self, event: builder::MtuUpdated);
+        #[doc = "Publishes a `MtuProbingCompleteReceived` event to the publisher's subscriber"]
+        fn on_mtu_probing_complete_received(&mut self, event: builder::MtuProbingCompleteReceived);
         #[doc = "Publishes a `SlowStartExited` event to the publisher's subscriber"]
         fn on_slow_start_exited(&mut self, event: builder::SlowStartExited);
         #[doc = "Publishes a `DeliveryRateSampled` event to the publisher's subscriber"]
@@ -9229,6 +9327,15 @@ mod traits {
             self.subscriber.on_event(&self.meta, &event);
         }
         #[inline]
+        fn on_mtu_probing_complete_received(&mut self, event: builder::MtuProbingCompleteReceived) {
+            let event = event.into_event();
+            self.subscriber
+                .on_mtu_probing_complete_received(self.context, &self.meta, &event);
+            self.subscriber
+                .on_connection_event(self.context, &self.meta, &event);
+            self.subscriber.on_event(&self.meta, &event);
+        }
+        #[inline]
         fn on_slow_start_exited(&mut self, event: builder::SlowStartExited) {
             let event = event.into_event();
             self.subscriber
@@ -9599,6 +9706,7 @@ pub mod testing {
         pub tx_stream_progress: u64,
         pub keep_alive_timer_expired: u64,
         pub mtu_updated: u64,
+        pub mtu_probing_complete_received: u64,
         pub slow_start_exited: u64,
         pub delivery_rate_sampled: u64,
         pub pacing_rate_updated: u64,
@@ -9694,6 +9802,7 @@ pub mod testing {
                 tx_stream_progress: 0,
                 keep_alive_timer_expired: 0,
                 mtu_updated: 0,
+                mtu_probing_complete_received: 0,
                 slow_start_exited: 0,
                 delivery_rate_sampled: 0,
                 pacing_rate_updated: 0,
@@ -10303,6 +10412,20 @@ pub mod testing {
                 self.output.push(out);
             }
         }
+        fn on_mtu_probing_complete_received(
+            &mut self,
+            _context: &mut Self::ConnectionContext,
+            meta: &api::ConnectionMeta,
+            event: &api::MtuProbingCompleteReceived,
+        ) {
+            self.mtu_probing_complete_received += 1;
+            if self.location.is_some() {
+                let meta = crate::event::snapshot::Fmt::to_snapshot(meta);
+                let event = crate::event::snapshot::Fmt::to_snapshot(event);
+                let out = format!("{meta:?} {event:?}");
+                self.output.push(out);
+            }
+        }
         fn on_slow_start_exited(
             &mut self,
             _context: &mut Self::ConnectionContext,
@@ -10607,6 +10730,7 @@ pub mod testing {
         pub tx_stream_progress: u64,
         pub keep_alive_timer_expired: u64,
         pub mtu_updated: u64,
+        pub mtu_probing_complete_received: u64,
         pub slow_start_exited: u64,
         pub delivery_rate_sampled: u64,
         pub pacing_rate_updated: u64,
@@ -10692,6 +10816,7 @@ pub mod testing {
                 tx_stream_progress: 0,
                 keep_alive_timer_expired: 0,
                 mtu_updated: 0,
+                mtu_probing_complete_received: 0,
                 slow_start_exited: 0,
                 delivery_rate_sampled: 0,
                 pacing_rate_updated: 0,
@@ -11217,6 +11342,15 @@ pub mod testing {
         }
         fn on_mtu_updated(&mut self, event: builder::MtuUpdated) {
             self.mtu_updated += 1;
+            let event = event.into_event();
+            if self.location.is_some() {
+                let event = crate::event::snapshot::Fmt::to_snapshot(&event);
+                let out = format!("{event:?}");
+                self.output.push(out);
+            }
+        }
+        fn on_mtu_probing_complete_received(&mut self, event: builder::MtuProbingCompleteReceived) {
+            self.mtu_probing_complete_received += 1;
             let event = event.into_event();
             if self.location.is_some() {
                 let event = crate::event::snapshot::Fmt::to_snapshot(&event);
