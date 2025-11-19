@@ -126,6 +126,18 @@ event_recorder!(
 );
 
 event_recorder!(
+    MtuProbingCompleteReceived,
+    FrameReceived,
+    on_frame_received,
+    u16,
+    |event: &events::FrameReceived, storage: &mut Vec<u16>| {
+        if let events::Frame::MtuProbingComplete { mtu, .. } = &event.frame {
+            storage.push(*mtu);
+        }
+    }
+);
+
+event_recorder!(
     TlsClientHello,
     TlsClientHello,
     on_tls_client_hello,

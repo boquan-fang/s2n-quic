@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::recorder::MtuProbingCompleteReceived;
+
 use super::*;
 use s2n_codec::DecoderBufferMut;
 use s2n_quic::{
@@ -14,6 +16,7 @@ use s2n_quic::{
 use s2n_quic_core::{
     crypto::tls,
     dc::testing::MockDcEndpoint,
+    endpoint,
     event::{
         api::{
             ConnectionMeta, DatagramDropReason, DcState, EndpointDatagramDropped, EndpointMeta,
@@ -24,8 +27,10 @@ use s2n_quic_core::{
     },
     frame::ConnectionClose,
     packet::interceptor::{Datagram, Interceptor},
-    stateless_reset,
-    stateless_reset::token::testing::{TEST_TOKEN_1, TEST_TOKEN_2},
+    stateless_reset::{
+        self,
+        token::testing::{TEST_TOKEN_1, TEST_TOKEN_2},
+    },
     transport,
     varint::VarInt,
 };
@@ -73,7 +78,7 @@ fn dc_handshake_self_test() -> Result<()> {
         .with_tls(certificates::CERT_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
-    self_test(server, client, true, None, None, true)?;
+    self_test(server, client, true, None, None, true, true)?;
 
     Ok(())
 }
@@ -118,7 +123,7 @@ fn dc_mtls_handshake_self_test() -> Result<()> {
         .with_tls(client_tls)?
         .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?;
 
-    self_test(server, client, true, None, None, true)?;
+    self_test(server, client, true, None, None, true, true)?;
 
     Ok(())
 }
@@ -154,6 +159,7 @@ fn dc_mtls_handshake_auth_failure_self_test() -> Result<()> {
         Some(expected_client_error),
         None,
         true,
+        false,
     )?;
 
     Ok(())
@@ -198,6 +204,7 @@ fn dc_mtls_handshake_server_not_supported_self_test() -> Result<()> {
         )),
         Some(expected_server_error),
         true,
+        false,
     )?;
 
     Ok(())
@@ -247,6 +254,7 @@ fn dc_mtls_handshake_client_not_supported_self_test() -> Result<()> {
             "peer does not support specified dc versions",
         )),
         true,
+        false,
     )?;
 
     Ok(())
@@ -281,7 +289,8 @@ fn dc_possible_secret_control_packet(
         .with_dc(dc_endpoint)?
         .with_packet_interceptor(RandomShort::default())?;
 
-    let (client_events, _server_events) = self_test(server, client, true, None, None, false)?;
+    let (client_events, _server_events) =
+        self_test(server, client, true, None, None, false, false)?;
 
     assert_eq!(
         1,
@@ -317,6 +326,7 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
     expected_client_error: Option<connection::Error>,
     expected_server_error: Option<connection::Error>,
     with_blocklist: bool,
+    require_mtu_probing_complete: bool,
 ) -> Result<(DcRecorder, DcRecorder)> {
     let model = Model::default();
     let rtt = Duration::from_millis(100);
@@ -326,6 +336,12 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
     let server_events = server_subscriber.clone();
     let client_subscriber = DcRecorder::new();
     let client_events = client_subscriber.clone();
+
+    let mtu_probing_complete_subscriber = MtuProbingCompleteReceived::new();
+    let mtu_probing_complete_event = mtu_probing_complete_subscriber.events();
+
+    let connection_closed_subscriber = crate::recorder::ConnectionClosed::new();
+    let connection_closed_event = connection_closed_subscriber.events();
 
     test(model.clone(), |handle| {
         let metrics = aggregate::testing::Registry::snapshot();
@@ -375,8 +391,14 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
                 metrics.subscriber("client"),
             ),
             (
-                tracing_events(with_blocklist, model.clone()),
-                client_subscriber,
+                (
+                    tracing_events(with_blocklist, model.clone()),
+                    client_subscriber,
+                ),
+                (
+                    mtu_probing_complete_subscriber,
+                    connection_closed_subscriber,
+                ),
             ),
         );
 
@@ -426,6 +448,22 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
         Ok(addr)
     })
     .unwrap();
+
+    if require_mtu_probing_complete {
+        let mtu_probing_complete_handle = mtu_probing_complete_event.lock().unwrap();
+        assert!(mtu_probing_complete_handle.len() > 0);
+
+        let connection_closed_handle = connection_closed_event.lock().unwrap();
+        assert!(matches!(
+            connection_closed_handle[0],
+            s2n_quic_core::connection::Error::Transport {
+                // Must match the frame type for MtuProbingComplete frame 0xdc0001.
+                frame_type: 14417921,
+                initiator: endpoint::Location::Local,
+                ..
+            }
+        ));
+    }
 
     if expected_client_error.is_some() || expected_server_error.is_some() {
         return Ok((client_events, server_events));

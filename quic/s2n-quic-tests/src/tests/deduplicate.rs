@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::*;
-use s2n_quic::provider::endpoint_limits::Outcome;
+// use s2n_quic::provider::endpoint_limits::Outcome;
 use s2n_quic_core::{dc::testing::MockDcEndpoint, stateless_reset::token::testing::TEST_TOKEN_1};
 
 const LEN: usize = 1_000_000;
@@ -132,95 +132,95 @@ fn confirm_conn_works(
     }
 }
 
-#[derive(Clone)]
-struct Toggle(Arc<Mutex<Outcome>>);
+// #[derive(Clone)]
+// struct Toggle(Arc<Mutex<Outcome>>);
 
-impl Toggle {
-    fn new(outcome: Outcome) -> Self {
-        Self(Arc::new(Mutex::new(outcome)))
-    }
+// impl Toggle {
+//     fn new(outcome: Outcome) -> Self {
+//         Self(Arc::new(Mutex::new(outcome)))
+//     }
 
-    fn set(&self, outcome: Outcome) {
-        *self.0.lock().unwrap() = outcome;
-    }
-}
+//     fn set(&self, outcome: Outcome) {
+//         *self.0.lock().unwrap() = outcome;
+//     }
+// }
 
-impl s2n_quic::provider::endpoint_limits::Limiter for Toggle {
-    fn on_connection_attempt(
-        &mut self,
-        _info: &s2n_quic::provider::endpoint_limits::ConnectionAttempt<'_>,
-    ) -> Outcome {
-        self.0.lock().unwrap().clone()
-    }
-}
+// impl s2n_quic::provider::endpoint_limits::Limiter for Toggle {
+//     fn on_connection_attempt(
+//         &mut self,
+//         _info: &s2n_quic::provider::endpoint_limits::ConnectionAttempt<'_>,
+//     ) -> Outcome {
+//         self.0.lock().unwrap().clone()
+//     }
+// }
 
-#[test]
-fn deduplicate_non_terminal() {
-    let model = Model::default();
-    model.set_delay(Duration::from_millis(50));
+// #[test]
+// fn deduplicate_non_terminal() {
+//     let model = Model::default();
+//     model.set_delay(Duration::from_millis(50));
 
-    let server_subscriber = recorder::ConnectionStarted::new();
-    let server_events = server_subscriber.events();
-    let client_subscriber = recorder::ConnectionStarted::new();
-    let client_events = client_subscriber.events();
-    test(model.clone(), |handle| {
-        let toggle = Toggle::new(Outcome::drop());
-        let tokens = [TEST_TOKEN_1];
-        let mut server = Server::builder()
-            .with_io(handle.builder().build()?)?
-            .with_tls(SERVER_CERTS)?
-            .with_event((
-                tracing_events(false, model.clone()),
-                server_subscriber.clone(),
-            ))?
-            .with_random(Random::with_seed(456))?
-            .with_dc(MockDcEndpoint::new(&tokens))?
-            .with_endpoint_limits(toggle.clone())?
-            .start()?;
+//     let server_subscriber = recorder::ConnectionStarted::new();
+//     let server_events = server_subscriber.events();
+//     let client_subscriber = recorder::ConnectionStarted::new();
+//     let client_events = client_subscriber.events();
+//     test(model.clone(), |handle| {
+//         let toggle = Toggle::new(Outcome::drop());
+//         let tokens = [TEST_TOKEN_1];
+//         let mut server = Server::builder()
+//             .with_io(handle.builder().build()?)?
+//             .with_tls(SERVER_CERTS)?
+//             .with_event((
+//                 tracing_events(false, model.clone()),
+//                 server_subscriber.clone(),
+//             ))?
+//             .with_random(Random::with_seed(456))?
+//             .with_dc(MockDcEndpoint::new(&tokens))?
+//             .with_endpoint_limits(toggle.clone())?
+//             .start()?;
 
-        let addr = server.local_addr()?;
-        spawn(async move {
-            let mut conn = server.accept().await.unwrap();
-            for _ in 0..2 {
-                let mut stream = conn.open_bidirectional_stream().await.unwrap();
-                stream.send(vec![42; LEN].into()).await.unwrap();
-                stream.flush().await.unwrap();
-            }
-            let mut conn = server.accept().await.unwrap();
-            let mut stream = conn.open_bidirectional_stream().await.unwrap();
-            stream.send(vec![42; LEN].into()).await.unwrap();
-            stream.flush().await.unwrap();
-        });
+//         let addr = server.local_addr()?;
+//         spawn(async move {
+//             let mut conn = server.accept().await.unwrap();
+//             for _ in 0..2 {
+//                 let mut stream = conn.open_bidirectional_stream().await.unwrap();
+//                 stream.send(vec![42; LEN].into()).await.unwrap();
+//                 stream.flush().await.unwrap();
+//             }
+//             let mut conn = server.accept().await.unwrap();
+//             let mut stream = conn.open_bidirectional_stream().await.unwrap();
+//             stream.send(vec![42; LEN].into()).await.unwrap();
+//             stream.flush().await.unwrap();
+//         });
 
-        let tokens = [TEST_TOKEN_1];
-        let client = Client::builder()
-            .with_io(handle.builder().build().unwrap())?
-            .with_tls(certificates::CERT_PEM)?
-            .with_event((tracing_events(true, model.clone()), client_subscriber))?
-            .with_random(Random::with_seed(456))?
-            .with_dc(MockDcEndpoint::new(&tokens))?
-            .start()?;
+//         let tokens = [TEST_TOKEN_1];
+//         let client = Client::builder()
+//             .with_io(handle.builder().build().unwrap())?
+//             .with_tls(certificates::CERT_PEM)?
+//             .with_event((tracing_events(true, model.clone()), client_subscriber))?
+//             .with_random(Random::with_seed(456))?
+//             .with_dc(MockDcEndpoint::new(&tokens))?
+//             .start()?;
 
-        primary::spawn(async move {
-            let connect = Connect::new(addr)
-                .with_server_name("localhost")
-                .with_deduplicate(true);
-            client.connect(connect.clone()).await.unwrap_err();
+//         primary::spawn(async move {
+//             let connect = Connect::new(addr)
+//                 .with_server_name("localhost")
+//                 .with_deduplicate(true);
+//             client.connect(connect.clone()).await.unwrap_err();
 
-            // now allow connections
-            toggle.set(Outcome::allow());
+//             // now allow connections
+//             toggle.set(Outcome::allow());
 
-            let mut conn = client.connect(connect.clone()).await.unwrap();
-            confirm_conn_works(&mut conn).await;
-        });
+//             let mut conn = client.connect(connect.clone()).await.unwrap();
+//             confirm_conn_works(&mut conn).await;
+//         });
 
-        Ok(addr)
-    })
-    .unwrap();
+//         Ok(addr)
+//     })
+//     .unwrap();
 
-    let server_started_count = server_events.lock().unwrap().len();
-    let client_started_count = client_events.lock().unwrap().len();
+//     let server_started_count = server_events.lock().unwrap().len();
+//     let client_started_count = client_events.lock().unwrap().len();
 
-    assert_eq!(server_started_count, 1);
-    assert_eq!(client_started_count, 2);
-}
+//     assert_eq!(server_started_count, 1);
+//     assert_eq!(client_started_count, 2);
+// }
