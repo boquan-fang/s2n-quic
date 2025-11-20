@@ -77,7 +77,7 @@ impl event::IntoEvent<event::builder::Frame> for &MtuProbingComplete {
     #[inline]
     fn into_event(self) -> event::builder::Frame {
         event::builder::Frame::MtuProbingComplete {
-            mtu: self.mtu.into(),
+            mtu: self.mtu,
         }
     }
 }

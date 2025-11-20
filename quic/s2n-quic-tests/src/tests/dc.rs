@@ -451,7 +451,7 @@ fn self_test<S: ServerProviders, C: ClientProviders>(
 
     if require_mtu_probing_complete {
         let mtu_probing_complete_handle = mtu_probing_complete_event.lock().unwrap();
-        assert!(mtu_probing_complete_handle.len() > 0);
+        assert!(!mtu_probing_complete_handle.is_empty());
 
         let connection_closed_handle = connection_closed_event.lock().unwrap();
         assert!(matches!(
