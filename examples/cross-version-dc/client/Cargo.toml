@@ -1,0 +1,16 @@
+[package]
+name = "quic-echo-client"
+version = "0.1.0"
+authors = ["AWS s2n"]
+edition = "2021"
+
+[[bin]]
+name = "quic_echo_client"
+path = "src/main.rs"
+
+[dependencies]
+s2n-quic = { path = "../../../quic/s2n-quic", features = ["unstable-provider-dc"] }
+s2n-quic-core = { path = "../../../quic/s2n-quic-core", features = ["testing"] }
+tokio = { version = "1", features = ["full"] }
+
+[workspace]
