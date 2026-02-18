@@ -93,15 +93,14 @@ fn build_tls_client() -> tls_provider::Client {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    // Initialize tracing
+    let format = tracing_subscriber::fmt::format()
+        .with_level(false) // don't include levels in formatted output
+        .with_ansi(false)
+        .compact(); // Use a less verbose output format.
+
     tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::builder()
-                .with_default_directive(tracing::Level::INFO.into())
-                .with_env_var("S2N_LOG")
-                .from_env()
-                .unwrap(),
-        )
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .event_format(format)
         .init();
 
     let subscriber = NoopSubscriber;
@@ -121,16 +120,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let handshake_addr = HANDSHAKE_ADDR.parse().unwrap();
 
     let psk_server = server::Provider::builder()
+        .with_event_subscriber(s2n_quic::provider::event::tracing::Subscriber::default())
         .start(
             handshake_addr,
             tls_server,
-            subscriber.clone(),
+            // subscriber.clone(),
+            s2n_quic::provider::event::tracing::Subscriber::default(),
             server_map.clone(),
         )
         .await?;
 
     let actual_handshake_addr = psk_server.local_addr();
-    eprintln!("[server] PSK handshake server listening on {actual_handshake_addr}");
+    // eprintln!("[server] PSK handshake server listening on {actual_handshake_addr}");
 
     // ==========================================
     // 2. Start the data acceptor server (dcQUIC stream server)
@@ -143,7 +144,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .build(psk_server.clone(), subscriber.clone())?;
 
     let actual_acceptor_addr = stream_server.acceptor_addr()?;
-    eprintln!("[server] Data acceptor listening on {actual_acceptor_addr}");
+    // eprintln!("[server] Data acceptor listening on {actual_acceptor_addr}");
 
     // ==========================================
     // 3. Start the PSK handshake client
@@ -161,15 +162,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     let psk_client = client::Provider::builder()
         .with_success_jitter(Duration::ZERO)
+        .with_event_subscriber(s2n_quic::provider::event::tracing::Subscriber::default())
         .start(
             "0.0.0.0:0".parse().unwrap(),
             client_map,
             tls_client,
-            subscriber.clone(),
+            // subscriber.clone(),
+            s2n_quic::provider::event::tracing::Subscriber::default(),
             server_name.clone(),
         )?;
 
-    eprintln!("[client] PSK handshake client started");
+    // eprintln!("[client] PSK handshake client started");
 
     // ==========================================
     // 4. Create the stream client
@@ -178,7 +181,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .with_default_protocol(Protocol::Udp)
         .build(psk_client, subscriber.clone())?;
 
-    eprintln!("[client] Stream client ready");
+    // eprintln!("[client] Stream client ready");
 
     // ==========================================
     // 5. Spawn the echo server task
@@ -224,7 +227,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // 6. Client: connect, send, receive echo
     // ==========================================
     eprintln!(
-        "[client] Connecting to handshake={actual_handshake_addr} acceptor={actual_acceptor_addr}"
+        // "[client] Connecting to handshake={actual_handshake_addr} acceptor={actual_acceptor_addr}"
     );
 
     let mut stream = stream_client
@@ -252,7 +255,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     );
 
     assert_eq!(&response[..n], message, "Echo mismatch!");
-    eprintln!("[client] ✓ Echo verified!");
+    // eprintln!("[client] ✓ Echo verified!");
 
     // Wait for server to finish
     let _ = tokio::time::timeout(Duration::from_secs(5), server_handle).await;
