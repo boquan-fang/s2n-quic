@@ -5,9 +5,9 @@ authors = ["AWS s2n"]
 edition = "2021"
 
 [dependencies]
-s2n-quic-dc = { version = "=0.74.0", features = ["testing"] }
-s2n-quic = { version = "=1.74.0", features = ["provider-event-tracing"]}
-s2n-quic-core = { version = "=0.74.0" }
+s2n-quic-dc = { version = "=0.72.0", features = ["testing"] }
+s2n-quic = { version = "=1.72.0", features = ["provider-event-tracing"]}
+s2n-quic-core = { version = "=0.72.0" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"

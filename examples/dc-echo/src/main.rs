@@ -96,6 +96,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let format = tracing_subscriber::fmt::format()
         .with_level(false) // don't include levels in formatted output
         .with_ansi(false)
+        .without_time()
         .compact(); // Use a less verbose output format.
 
     tracing_subscriber::fmt()
@@ -111,7 +112,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let server_map = Map::new(
         Signer::new(b"default"),
         50_000,
-        false,
+        // false,
         StdClock::default(),
         subscriber.clone(),
     );
@@ -152,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let client_map = Map::new(
         Signer::new(b"default"),
         50_000,
-        false,
+        // false,
         StdClock::default(),
         subscriber.clone(),
     );
