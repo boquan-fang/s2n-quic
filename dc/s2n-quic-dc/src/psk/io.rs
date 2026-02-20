@@ -765,6 +765,72 @@ mod tests {
         );
     }
 
+    /// Per-connection packet sent and packet lost counts (connection-level)
+    #[derive(Clone, Default)]
+    struct TestStatsSubscriber {
+        /// Total packets sent across all connections
+        packets_sent: Arc<AtomicU64>,
+        /// Total packets lost across all connections
+        packets_lost: Arc<AtomicU64>,
+    }
+
+    impl TestStatsSubscriber {
+        fn new() -> Self {
+            Self::default()
+        }
+
+        fn sent(&self) -> u64 {
+            self.packets_sent.load(Ordering::Relaxed)
+        }
+
+        fn lost(&self) -> u64 {
+            self.packets_lost.load(Ordering::Relaxed)
+        }
+    }
+
+    impl s2n_quic_core::event::Subscriber for TestStatsSubscriber {
+        type ConnectionContext = TestStatsSubscriber;
+
+        fn create_connection_context(
+            &mut self,
+            _meta: &s2n_quic_core::event::api::ConnectionMeta,
+            _info: &s2n_quic_core::event::api::ConnectionInfo,
+        ) -> Self::ConnectionContext {
+            self.clone()
+        }
+
+        fn on_packet_sent(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            _meta: &s2n_quic_core::event::api::ConnectionMeta,
+            _event: &s2n_quic_core::event::api::PacketSent,
+        ) {
+            context.packets_sent.fetch_add(1, Ordering::Relaxed);
+        }
+
+        fn on_packet_lost(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            _meta: &s2n_quic_core::event::api::ConnectionMeta,
+            _event: &s2n_quic_core::event::api::PacketLost,
+        ) {
+            context.packets_lost.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    // Also implement the dc event subscriber trait so it can be used as the
+    // `subscriber` parameter in `Provider::setup`.
+    impl crate::event::Subscriber for TestStatsSubscriber {
+        type ConnectionContext = ();
+
+        fn create_connection_context(
+            &self,
+            _meta: &crate::event::api::ConnectionMeta,
+            _info: &crate::event::api::ConnectionInfo,
+        ) -> Self::ConnectionContext {
+        }
+    }
+
     /// Verifies that under a flood of fake client hello packets, a real dcQUIC client
     /// can still complete a handshake successfully.
     #[cfg(target_os = "linux")]
@@ -773,14 +839,14 @@ mod tests {
         init_tracing();
 
         let tls = TestTlsProvider {};
-        let noop_subscriber = NoopSubscriber {};
+        let server_stats = TestStatsSubscriber::new();
 
         let server_map = Map::new(
             Signer::new(b"default"),
             50_000,
             false,
             StdClock::default(),
-            noop_subscriber.clone(),
+            server_stats.clone(),
         );
 
         let server_builder = crate::psk::server::Builder::default();
@@ -788,7 +854,7 @@ mod tests {
             "127.0.0.1:0".parse().unwrap(),
             server_map.clone(),
             tls.clone(),
-            noop_subscriber.clone(),
+            server_stats.clone(),
             server_builder,
         );
 
@@ -797,6 +863,7 @@ mod tests {
         // Create the real client *before* starting the flood so its Client Hello
         // is the first packet queued to socket 1.
         let noop_subscriber = NoopSubscriber {};
+        let client_stats = TestStatsSubscriber::new();
         let client_map = Map::new(
             Signer::new(b"default"),
             50_000,
@@ -807,13 +874,13 @@ mod tests {
 
         let client = Client::bind::<
             <TestTlsProvider as Provider>::Client,
-            NoopSubscriber,
+            (TestStatsSubscriber, NoopSubscriber),
             s2n_quic::provider::event::default::Subscriber,
         >(
             "0.0.0.0:0".parse().unwrap(),
             client_map,
             tls.start_client().unwrap(),
-            noop_subscriber.clone(),
+            (client_stats.clone(), noop_subscriber),
             crate::psk::client::Builder::default().with_success_jitter(Duration::ZERO),
         )
         .unwrap();
@@ -866,7 +933,18 @@ mod tests {
         // Wait briefly for events to propagate
         tokio::time::sleep(Duration::from_millis(500)).await;
 
+        let total_flood_packets = flood_count.load(Ordering::Relaxed);
+        let client_packets_sent = client_stats.sent();
+        let client_packets_lost = client_stats.lost();
+
+        tracing::info!(
+            "Flood packets sent: {}, Client packets sent: {}, Client packets lost: {}",
+            total_flood_packets,
+            client_packets_sent,
+            client_packets_lost,
+        );
+
         // The handshake should complete successfully despite the flood
-        assert!(handshake_result.is_ok(),);
+        assert!(handshake_result.is_ok());
     }
 }
