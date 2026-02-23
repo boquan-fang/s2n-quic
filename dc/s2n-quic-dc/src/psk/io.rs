@@ -772,6 +772,8 @@ mod tests {
         packets_sent: Arc<AtomicU64>,
         /// Total packets lost across all connections
         packets_lost: Arc<AtomicU64>,
+        /// Non-Initial packets received (i.e. Handshake/Short packets from a real client, not flood)
+        non_initial_packets_received: Arc<AtomicU64>,
     }
 
     impl TestStatsSubscriber {
@@ -785,6 +787,10 @@ mod tests {
 
         fn lost(&self) -> u64 {
             self.packets_lost.load(Ordering::Relaxed)
+        }
+
+        fn non_initial_received(&self) -> u64 {
+            self.non_initial_packets_received.load(Ordering::Relaxed)
         }
     }
 
@@ -815,6 +821,22 @@ mod tests {
             _event: &s2n_quic_core::event::api::PacketLost,
         ) {
             context.packets_lost.fetch_add(1, Ordering::Relaxed);
+        }
+
+        fn on_packet_received(
+            &mut self,
+            context: &mut Self::ConnectionContext,
+            _meta: &s2n_quic_core::event::api::ConnectionMeta,
+            event: &s2n_quic_core::event::api::PacketReceived,
+        ) {
+            if !matches!(
+                event.packet_header,
+                s2n_quic_core::event::api::PacketHeader::Initial { .. }
+            ) {
+                context
+                    .non_initial_packets_received
+                    .fetch_add(1, Ordering::Relaxed);
+            }
         }
     }
 
@@ -936,12 +958,14 @@ mod tests {
         let total_flood_packets = flood_count.load(Ordering::Relaxed);
         let client_packets_sent = client_stats.sent();
         let client_packets_lost = client_stats.lost();
+        let server_non_initial_received = server_stats.non_initial_received();
 
         tracing::info!(
-            "Flood packets sent: {}, Client packets sent: {}, Client packets lost: {}",
+            "Flood packets sent: {}, Client packets sent: {}, Client packets lost: {}, Server non-Initial packets received (from real client): {}",
             total_flood_packets,
             client_packets_sent,
             client_packets_lost,
+            server_non_initial_received,
         );
 
         // The handshake should complete successfully despite the flood
