@@ -74,6 +74,7 @@ mod rand {
 
     /// A random number generator backed by a ChaCha CSPRNG that periodically
     /// reseeds from a given entropy source `S`.
+    #[derive(Debug)]
     pub struct Random<S: TryRng + Send + 'static> {
         public: ReseedingRng<S>,
         private: ReseedingRng<S>,
@@ -85,12 +86,6 @@ mod rand {
                 public: ReseedingRng::new(public_entropy),
                 private: ReseedingRng::new(private_entropy),
             }
-        }
-    }
-
-    impl<S: TryRng + Send + 'static> core::fmt::Debug for Random<S> {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            f.debug_struct("Random").finish_non_exhaustive()
         }
     }
 
@@ -135,7 +130,7 @@ mod rand {
 
     impl Default for Generator {
         fn default() -> Self {
-            Self(Random::new(SysRng::default(), SysRng::default()))
+            Self(Random::new(SysRng, SysRng))
         }
     }
 

@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use rand::RngExt;
+use rand_core::SeedableRng;
 use s2n_quic::{
     client::Connect,
     provider::{
@@ -11,7 +13,6 @@ use s2n_quic::{
     Client, Server,
 };
 use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
-
 use std::net::SocketAddr;
 
 pub mod recorder;
@@ -285,7 +286,6 @@ pub struct Random {
 
 impl Random {
     pub fn with_seed(seed: u64) -> Self {
-        use rand_core::SeedableRng;
         Self {
             inner: rand_chacha::ChaCha8Rng::seed_from_u64(seed),
         }
@@ -298,7 +298,6 @@ impl havoc::Random for Random {
     }
 
     fn gen_range(&mut self, range: std::ops::Range<u64>) -> u64 {
-        use rand::RngExt;
         self.inner.random_range(range)
     }
 }
