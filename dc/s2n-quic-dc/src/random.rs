@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use rand_chacha::{
-    rand_core::{block::BlockRng, RngCore, SeedableRng},
-    ChaChaCore,
+    rand_core::{Rng, SeedableRng, TryRng},
+    ChaCha20Rng,
 };
 
 pub use s2n_quic_core::random::*;
@@ -17,24 +17,27 @@ const RESEED_THRESHOLD: u64 = 1024 * 64;
 
 struct AwsLc;
 
-impl RngCore for AwsLc {
+impl TryRng for AwsLc {
+    type Error = core::convert::Infallible;
+
     #[inline]
-    fn next_u32(&mut self) -> u32 {
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
         let mut v = [0; 4];
-        self.fill_bytes(&mut v);
-        u32::from_ne_bytes(v)
+        aws_lc_rs::rand::fill(&mut v).unwrap();
+        Ok(u32::from_ne_bytes(v))
     }
 
     #[inline]
-    fn next_u64(&mut self) -> u64 {
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
         let mut v = [0; 8];
-        self.fill_bytes(&mut v);
-        u64::from_ne_bytes(v)
+        aws_lc_rs::rand::fill(&mut v).unwrap();
+        Ok(u64::from_ne_bytes(v))
     }
 
     #[inline]
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        aws_lc_rs::rand::fill(dest).unwrap()
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error> {
+        aws_lc_rs::rand::fill(dest).unwrap();
+        Ok(())
     }
 }
 
@@ -44,25 +47,25 @@ impl RngCore for AwsLc {
 /// functionality: a ChaCha CSPRNG that reseeds from `AwsLc` after
 /// `RESEED_THRESHOLD` bytes have been generated.
 struct ReseedingRng {
-    inner: BlockRng<ChaChaCore>,
+    inner: ChaCha20Rng,
     bytes_until_reseed: u64,
 }
 
 impl ReseedingRng {
     fn new() -> Self {
         Self {
-            inner: BlockRng::<ChaChaCore>::from_rng(&mut AwsLc),
+            inner: ChaCha20Rng::from_rng(&mut AwsLc),
             bytes_until_reseed: RESEED_THRESHOLD,
         }
     }
 
     #[inline]
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.inner.fill_bytes(dest);
+        Rng::fill_bytes(&mut self.inner, dest);
         let len = dest.len() as u64;
         self.bytes_until_reseed = self.bytes_until_reseed.saturating_sub(len);
         if self.bytes_until_reseed == 0 {
-            self.inner = BlockRng::<ChaChaCore>::from_rng(&mut AwsLc);
+            self.inner = ChaCha20Rng::from_rng(&mut AwsLc);
             self.bytes_until_reseed = RESEED_THRESHOLD;
         }
     }
