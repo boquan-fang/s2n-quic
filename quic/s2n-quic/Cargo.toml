@@ -65,6 +65,7 @@ unstable-provider-connection-close-formatter = []
 unstable-offload-tls = []
 
 [dependencies]
+aws-lc-rs = "1.12"
 bytes = { version = "1", default-features = false }
 cfg-if = "1"
 cuckoofilter = { version = "0.5", optional = true }
