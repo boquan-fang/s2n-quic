@@ -226,3 +226,97 @@ event_recorder!(
         storage.push(addr);
     }
 );
+
+/// Extracts the packet number from a PacketHeader, if available
+fn packet_number(header: &events::PacketHeader) -> Option<u64> {
+    match header {
+        events::PacketHeader::Initial { number, .. } => Some(*number),
+        events::PacketHeader::Handshake { number, .. } => Some(*number),
+        events::PacketHeader::ZeroRtt { number, .. } => Some(*number),
+        events::PacketHeader::OneRtt { number, .. } => Some(*number),
+        _ => None,
+    }
+}
+
+/// A subscriber that tracks which frames are sent in MTU probing packets.
+///
+/// It correlates `PacketSent` (which has the `transmission_mode`) with
+/// `FrameSent` (which has the `frame`) via their shared packet number.
+///
+/// Note: `FrameSent` events are emitted *before* `PacketSent` for the same
+/// packet, so we buffer all frames by packet number and then retroactively
+/// collect the ones belonging to MTU probing packets when `PacketSent` arrives.
+#[derive(Clone, Default)]
+pub struct MtuProbeFrames {
+    /// Frames sent in packets with transmission_mode == MtuProbing,
+    /// stored as (packet_number, frame)
+    pub events: Arc<Mutex<Vec<(u64, events::Frame)>>>,
+    /// Buffered frames indexed by packet number (before we know the transmission mode)
+    pending_frames: Arc<Mutex<std::collections::HashMap<u64, Vec<events::Frame>>>>,
+}
+
+impl MtuProbeFrames {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn events(&self) -> Arc<Mutex<Vec<(u64, events::Frame)>>> {
+        self.events.clone()
+    }
+}
+
+impl events::Subscriber for MtuProbeFrames {
+    type ConnectionContext = MtuProbeFrames;
+
+    fn create_connection_context(
+        &mut self,
+        _meta: &events::ConnectionMeta,
+        _info: &events::ConnectionInfo,
+    ) -> Self::ConnectionContext {
+        self.clone()
+    }
+
+    fn on_frame_sent(
+        &mut self,
+        context: &mut Self::ConnectionContext,
+        _meta: &events::ConnectionMeta,
+        event: &events::FrameSent,
+    ) {
+        if let Some(number) = packet_number(&event.packet_header) {
+            context
+                .pending_frames
+                .lock()
+                .unwrap()
+                .entry(number)
+                .or_default()
+                .push(event.frame.clone());
+        }
+    }
+
+    fn on_packet_sent(
+        &mut self,
+        context: &mut Self::ConnectionContext,
+        _meta: &events::ConnectionMeta,
+        event: &events::PacketSent,
+    ) {
+        if matches!(
+            event.transmission_mode,
+            events::TransmissionMode::MtuProbing { .. }
+        ) {
+            if let Some(number) = packet_number(&event.packet_header) {
+                let mut pending = context.pending_frames.lock().unwrap();
+                if let Some(frames) = pending.remove(&number) {
+                    let mut events = context.events.lock().unwrap();
+                    for frame in frames {
+                        events.push((number, frame));
+                    }
+                }
+            }
+        } else {
+            // Not an MTU probe packet; discard buffered frames to save memory
+            if let Some(number) = packet_number(&event.packet_header) {
+                context.pending_frames.lock().unwrap().remove(&number);
+            }
+        }
+    }
+}

@@ -534,6 +534,59 @@ fn mtu_blackhole() {
     ));
 }
 
+// Verify that MTU probe packets only contain PING and PADDING frames
+#[test]
+fn mtu_probe_only_ping_and_padding() {
+    let model = Model::default();
+    let rtt = Duration::from_millis(100);
+    let max_mtu = 9001;
+    let subscriber = recorder::MtuProbeFrames::new();
+    let probe_events = subscriber.events();
+
+    model.set_delay(rtt / 2);
+    model.set_max_udp_payload(max_mtu);
+
+    test(model.clone(), |handle| {
+        let server = Server::builder()
+            .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
+            .with_tls(SERVER_CERTS)?
+            .with_event((tracing_events(true, model.clone()), subscriber))?
+            .with_random(Random::with_seed(456))?
+            .start()?;
+        let client = Client::builder()
+            .with_io(handle.builder().with_max_mtu(max_mtu).build()?)?
+            .with_tls(certificates::CERT_PEM)?
+            .with_event(tracing_events(true, model.clone()))?
+            .with_random(Random::with_seed(456))?
+            .start()?;
+        let addr = start_server(server)?;
+        // we need a large payload to allow for multiple rounds of MTU probing
+        start_client(client, addr, Data::new(10_000_000))?;
+        Ok(addr)
+    })
+    .unwrap();
+
+    let events = probe_events.lock().unwrap();
+
+    // We should have recorded at least some frames from MTU probe packets
+    assert!(
+        !events.is_empty(),
+        "Expected at least one frame from an MTU probing packet"
+    );
+
+    // Every frame sent in an MTU probing packet should be PING or PADDING
+    for (pkt_num, frame) in events.iter() {
+        assert!(
+            matches!(
+                frame,
+                events::Frame::Ping { .. } | events::Frame::Padding { .. }
+            ),
+            "MTU probe packet {pkt_num} contained unexpected frame: {frame:?}. \
+             Only PING and PADDING frames are expected in MTU probe packets."
+        );
+    }
+}
+
 // ensure the server enforces the minimum MTU for all initial packets
 #[test]
 fn minimum_initial_packet() {
