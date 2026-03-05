@@ -1077,3 +1077,27 @@ enum DcState {
     PathSecretsReady,
     Complete,
 }
+
+/// The mode in which a packet is being transmitted
+enum TransmissionMode {
+    /// Loss recovery probing to detect lost packets
+    LossRecoveryProbing,
+    /// Maximum transmission unit probing to determine the path MTU
+    MtuProbing,
+    /// Path validation to verify peer address reachability
+    PathValidationOnly,
+    /// Normal transmission
+    Normal,
+}
+
+impl IntoEvent<builder::TransmissionMode> for crate::transmission::Mode {
+    #[inline]
+    fn into_event(self) -> builder::TransmissionMode {
+        match self {
+            Self::LossRecoveryProbing => builder::TransmissionMode::LossRecoveryProbing {},
+            Self::MtuProbing => builder::TransmissionMode::MtuProbing {},
+            Self::PathValidationOnly => builder::TransmissionMode::PathValidationOnly {},
+            Self::Normal => builder::TransmissionMode::Normal {},
+        }
+    }
+}
