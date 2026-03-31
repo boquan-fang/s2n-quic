@@ -18,6 +18,7 @@ use s2n_quic::{
 use s2n_quic_core::{crypto::tls::testing::certificates, havoc, stream::testing::Data};
 use std::net::SocketAddr;
 
+pub mod cross_version;
 pub mod recorder;
 #[cfg(test)]
 mod tests;
@@ -220,6 +221,9 @@ pub fn start_server(mut server: Server) -> Result<SocketAddr> {
 }
 
 pub fn server(handle: &Handle, network_env: Model) -> Result<SocketAddr> {
+    if cross_version::VersionConfig::from_env().should_use_prev_server() {
+        return cross_version::prev_server(handle, network_env);
+    }
     let server = build_server(handle, network_env)?;
     start_server(server)
 }
@@ -239,6 +243,9 @@ pub fn client(
     network_env: Model,
     with_blocklist: bool,
 ) -> Result {
+    if cross_version::VersionConfig::from_env().should_use_prev_client() {
+        return cross_version::prev_client(handle, server_addr, network_env, with_blocklist);
+    }
     let client = build_client(handle, network_env, with_blocklist)?;
     start_client(client, server_addr, Data::new(10_000))
 }

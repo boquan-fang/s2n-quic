@@ -25,6 +25,10 @@ tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 zerocopy = { version = "0.8", features = ["derive"] }
 
+# Previous version dependencies for cross-version testing
+s2n-quic-prev = { package = "s2n-quic", version = "=1.76.0", features = ["provider-event-tracing", "unstable-provider-io-testing", "unstable-provider-packet-interceptor", "unstable-provider-random"] }
+s2n-quic-core-prev = { package = "s2n-quic-core", version = "=0.76.0", features = ["testing"] }
+
 # quiche does not currently build on 32-bit platforms
 # see https://github.com/cloudflare/quiche/issues/2097
 [target.'cfg(not(target_arch = "x86"))'.dependencies]
