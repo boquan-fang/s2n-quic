@@ -57,8 +57,7 @@ type PrevHandle = s2n_quic_prev::provider::io::testing::Handle;
 ///
 /// # Safety
 ///
-/// Both `Handle` types are structurally identical (verified by diffing the
-/// source files between versions). They both contain:
+/// Both `Handle` types are structurally identical. They both contain:
 /// - `executor: bach::executor::Handle` (same bach crate, same type)
 /// - `buffers: network::Buffers` (identical source, identical layout)
 ///
@@ -77,48 +76,11 @@ fn to_prev_handle(handle: &Handle) -> PrevHandle {
     }
 }
 
-/// Random provider implementing the previous version's traits.
-pub struct PrevRandom {
-    inner: rand::rngs::ChaCha8Rng,
-}
+// Implement the previous version's provider traits on the existing Random type.
+// This avoids duplicating the struct — we just add the prev version's trait impls.
+use crate::Random;
 
-impl PrevRandom {
-    pub fn with_seed(seed: u64) -> Self {
-        use rand::rand_core::SeedableRng;
-        Self {
-            inner: rand::rngs::ChaCha8Rng::seed_from_u64(seed),
-        }
-    }
-}
-
-impl rand::rand_core::TryRng for PrevRandom {
-    type Error = core::convert::Infallible;
-
-    fn try_next_u32(&mut self) -> core::result::Result<u32, Self::Error> {
-        Ok(rand::rand_core::Rng::next_u32(&mut self.inner))
-    }
-
-    fn try_next_u64(&mut self) -> core::result::Result<u64, Self::Error> {
-        Ok(rand::rand_core::Rng::next_u64(&mut self.inner))
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> core::result::Result<(), Self::Error> {
-        rand::rand_core::Rng::fill_bytes(&mut self.inner, dest);
-        Ok(())
-    }
-}
-
-impl s2n_quic_core_prev::havoc::Random for PrevRandom {
-    fn fill(&mut self, bytes: &mut [u8]) {
-        rand::rand_core::Rng::fill_bytes(&mut self.inner, bytes);
-    }
-
-    fn gen_range(&mut self, range: std::ops::Range<u64>) -> u64 {
-        rand::RngExt::random_range(&mut self.inner, range)
-    }
-}
-
-impl s2n_quic_prev::provider::random::Provider for PrevRandom {
+impl s2n_quic_prev::provider::random::Provider for Random {
     type Generator = Self;
     type Error = core::convert::Infallible;
 
@@ -127,7 +89,7 @@ impl s2n_quic_prev::provider::random::Provider for PrevRandom {
     }
 }
 
-impl s2n_quic_prev::provider::random::Generator for PrevRandom {
+impl s2n_quic_prev::provider::random::Generator for Random {
     fn public_random_fill(&mut self, dest: &mut [u8]) {
         rand::rand_core::Rng::fill_bytes(self, dest);
     }
@@ -151,7 +113,7 @@ pub fn prev_build_server(handle: &Handle) -> Result<s2n_quic_prev::Server> {
     Ok(s2n_quic_prev::Server::builder()
         .with_io(prev_handle.builder().build().unwrap())?
         .with_tls(PREV_SERVER_CERTS)?
-        .with_random(PrevRandom::with_seed(123))?
+        .with_random(Random::with_seed(123))?
         .start()?)
 }
 
@@ -203,7 +165,7 @@ pub fn prev_build_client(handle: &Handle) -> Result<s2n_quic_prev::Client> {
     Ok(s2n_quic_prev::Client::builder()
         .with_io(prev_handle.builder().build().unwrap())?
         .with_tls(prev_certificates::CERT_PEM)?
-        .with_random(PrevRandom::with_seed(123))?
+        .with_random(Random::with_seed(123))?
         .start()?)
 }
 
