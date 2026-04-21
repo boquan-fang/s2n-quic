@@ -1,0 +1,21 @@
+[package]
+name = "dcquic-compat-previous"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# This project is intentionally NOT part of the workspace.
+# It depends on a pinned old version of s2n-quic-dc from crates.io
+# to test wire compatibility between versions.
+#
+# Update the version here when bumping PREVIOUS_VERSION.
+
+[[bin]]
+name = "dcquic-compat-previous"
+path = "src/main.rs"
+
+[dependencies]
+s2n-quic = "=1.69.0"
+s2n-quic-core = { version = "=0.69.0", features = ["testing"] }
+s2n-quic-dc = { version = "=0.69.0", features = ["testing"] }
+tokio = { version = "1", features = ["full"] }

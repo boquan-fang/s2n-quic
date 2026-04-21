@@ -1,0 +1,18 @@
+[package]
+name = "s2n-quic-dc-compat"
+version = "0.1.0"
+authors = ["AWS s2n"]
+edition = "2021"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+[[bin]]
+name = "dcquic-compat"
+path = "src/main.rs"
+
+[dependencies]
+s2n-quic = { path = "../../quic/s2n-quic" }
+s2n-quic-core = { path = "../../quic/s2n-quic-core", features = ["testing"] }
+s2n-quic-dc = { path = "../s2n-quic-dc", features = ["testing"] }
+tokio = { version = "1", features = ["full"] }
