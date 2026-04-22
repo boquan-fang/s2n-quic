@@ -11,13 +11,12 @@
 //!   dcquic-compat server --protocol tcp
 //!   dcquic-compat client --protocol tcp --addr [::1]:5555 --handshake-addr [::1]:6666 --scenario echo
 
-use s2n_quic::provider::tls;
-use s2n_quic_core::{crypto::tls::testing::certificates, time::StdClock};
+use s2n_quic_core::time::StdClock;
 use s2n_quic_dc::{
     path::secret::{stateless_reset::Signer, Map},
     psk,
     stream::{client::tokio::Client, server::tokio::Server, socket::Protocol},
-    testing::NoopSubscriber,
+    testing::{NoopSubscriber, TestTlsProvider},
 };
 use std::{env, io, net::SocketAddr, process, time::Duration};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -46,35 +45,10 @@ fn parse_protocol(args: &[String]) -> Protocol {
     }
 }
 
-// -- TLS provider using test certificates --
-
-#[derive(Clone)]
-struct TestTlsProvider;
-
-impl tls::Provider for TestTlsProvider {
-    type Server = tls::default::Server;
-    type Client = tls::default::Client;
-    type Error = Box<dyn std::error::Error + Send + Sync>;
-
-    fn start_server(self) -> Result<Self::Server, Self::Error> {
-        Ok(tls::default::Server::builder()
-            .with_application_protocols(["h3"].iter())?
-            .with_certificate(certificates::CERT_PEM, certificates::KEY_PEM)?
-            .build()?)
-    }
-
-    fn start_client(self) -> Result<Self::Client, Self::Error> {
-        Ok(tls::default::Client::builder()
-            .with_application_protocols(["h3"].iter())?
-            .with_certificate(certificates::CERT_PEM)?
-            .build()?)
-    }
-}
-
-fn make_map(capacity: usize) -> Map {
+fn make_map() -> Map {
     Map::new(
         Signer::new(b"compat-test"),
-        capacity,
+        50_000,
         false,
         StdClock::default(),
         NoopSubscriber,
@@ -89,28 +63,25 @@ async fn main() {
     }
 
     let result = match args[1].as_str() {
-        "server" => {
-            let protocol = parse_protocol(&args);
-            run_server(protocol).await
-        }
+        "server" => run_server(parse_protocol(&args)).await,
         "client" => {
             let protocol = parse_protocol(&args);
             let addr: SocketAddr = parse_flag(&args, "--addr")
                 .unwrap_or_else(|| {
-                    eprintln!("--addr is required");
+                    eprintln!("--addr required");
                     usage();
                 })
                 .parse()
                 .expect("invalid --addr");
-            let handshake_addr: SocketAddr = parse_flag(&args, "--handshake-addr")
+            let hs_addr: SocketAddr = parse_flag(&args, "--handshake-addr")
                 .unwrap_or_else(|| {
-                    eprintln!("--handshake-addr is required");
+                    eprintln!("--handshake-addr required");
                     usage();
                 })
                 .parse()
                 .expect("invalid --handshake-addr");
-            let scenario = parse_flag(&args, "--scenario").unwrap_or_else(|| "echo".to_string());
-            run_client(protocol, addr, handshake_addr, &scenario).await
+            let scenario = parse_flag(&args, "--scenario").unwrap_or_else(|| "echo".into());
+            run_client(protocol, addr, hs_addr, &scenario).await
         }
         _ => usage(),
     };
@@ -122,14 +93,12 @@ async fn main() {
 }
 
 async fn run_server(protocol: Protocol) -> io::Result<()> {
-    let map = make_map(50_000);
-
     let server_psk = psk::server::Provider::builder()
         .start(
             "[::1]:0".parse().unwrap(),
-            TestTlsProvider,
+            TestTlsProvider {},
             NoopSubscriber,
-            map.clone(),
+            make_map(),
         )
         .await
         .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
@@ -138,38 +107,19 @@ async fn run_server(protocol: Protocol) -> io::Result<()> {
         .with_address("[::1]:0".parse().unwrap())
         .with_protocol(protocol)
         .with_workers(1.try_into().unwrap())
-        .build(server_psk.clone(), NoopSubscriber)?;
+        .build(server_psk, NoopSubscriber)?;
 
-    let acceptor_addr = server.acceptor_addr()?;
-    let handshake_addr = server.handshake_addr()?;
-
-    // Machine-readable output for the test harness
-    println!("ACCEPTOR={acceptor_addr}");
-    println!("HANDSHAKE={handshake_addr}");
+    println!("ACCEPTOR={}", server.acceptor_addr()?);
+    println!("HANDSHAKE={}", server.handshake_addr()?);
     println!("READY");
 
-    // Accept connections in a loop until the process is killed
     loop {
-        let (mut stream, peer_addr) = server.accept().await?;
-        eprintln!("server: accepted connection from {peer_addr}");
-
+        let (mut stream, _peer) = server.accept().await?;
         tokio::spawn(async move {
             let mut buf = Vec::new();
-            if let Err(e) = stream.read_to_end(&mut buf).await {
-                eprintln!("server: read error: {e}");
-                return;
-            }
-            eprintln!("server: received {} bytes", buf.len());
-
-            if let Err(e) = stream.write_all(&buf).await {
-                eprintln!("server: write error: {e}");
-                return;
-            }
-            if let Err(e) = stream.shutdown().await {
-                eprintln!("server: shutdown error: {e}");
-                return;
-            }
-            eprintln!("server: echoed {} bytes", buf.len());
+            let _ = stream.read_to_end(&mut buf).await;
+            let _ = stream.write_all(&buf).await;
+            let _ = stream.shutdown().await;
         });
     }
 }
@@ -180,13 +130,11 @@ async fn run_client(
     handshake_addr: SocketAddr,
     scenario: &str,
 ) -> io::Result<()> {
-    let map = make_map(50_000);
-
     let client_psk = psk::client::Provider::builder()
         .start(
             "[::]:0".parse().unwrap(),
-            map,
-            TestTlsProvider,
+            make_map(),
+            TestTlsProvider {},
             NoopSubscriber,
             "localhost".into(),
         )
@@ -196,74 +144,51 @@ async fn run_client(
         .with_default_protocol(protocol)
         .build(client_psk, NoopSubscriber)?;
 
-    let server_name = "localhost".into();
-
     match scenario {
         "echo" => {
             let payload = b"hello from cross-version compat test";
             let mut stream = client
-                .connect(handshake_addr, acceptor_addr, server_name)
+                .connect(handshake_addr, acceptor_addr, "localhost".into())
                 .await?;
-
             stream.write_all(payload).await?;
             stream.shutdown().await?;
-
             let mut response = Vec::new();
             stream.read_to_end(&mut response).await?;
-
-            assert_eq!(
-                &response,
-                payload,
-                "echo mismatch: expected {} bytes, got {}",
-                payload.len(),
-                response.len()
-            );
+            assert_eq!(&response, payload, "echo mismatch");
             println!("SUCCESS scenario=echo bytes={}", payload.len());
         }
         "large-echo" => {
-            // ~1MB payload
             let payload: Vec<u8> = (0..1_048_576).map(|i| (i % 251) as u8).collect();
             let mut stream = client
-                .connect(handshake_addr, acceptor_addr, server_name)
+                .connect(handshake_addr, acceptor_addr, "localhost".into())
                 .await?;
-
             stream.write_all(&payload).await?;
             stream.shutdown().await?;
-
             let mut response = Vec::new();
             stream.read_to_end(&mut response).await?;
-
-            assert_eq!(response.len(), payload.len(), "large echo size mismatch");
-            assert_eq!(response, payload, "large echo content mismatch");
+            assert_eq!(response, payload, "large echo mismatch");
             println!("SUCCESS scenario=large-echo bytes={}", payload.len());
         }
         "bidirectional" => {
-            let client_payload = b"client-to-server-bidirectional";
+            let payload = b"client-to-server-bidirectional";
             let mut stream = client
-                .connect(handshake_addr, acceptor_addr, server_name)
+                .connect(handshake_addr, acceptor_addr, "localhost".into())
                 .await?;
-
-            stream.write_all(client_payload).await?;
+            stream.write_all(payload).await?;
             stream.shutdown().await?;
-
             let mut response = Vec::new();
             stream.read_to_end(&mut response).await?;
-
-            assert_eq!(&response, client_payload, "bidirectional echo mismatch");
-            println!(
-                "SUCCESS scenario=bidirectional bytes={}",
-                client_payload.len()
-            );
+            assert_eq!(&response, payload, "bidirectional echo mismatch");
+            println!("SUCCESS scenario=bidirectional bytes={}", payload.len());
         }
         other => {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!("unknown scenario: {other}"),
-            ));
+            ))
         }
     }
 
-    // Give time for graceful cleanup
     tokio::time::sleep(Duration::from_millis(100)).await;
     Ok(())
 }

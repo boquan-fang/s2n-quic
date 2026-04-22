@@ -12,7 +12,6 @@ name = "dcquic-compat"
 path = "src/main.rs"
 
 [dependencies]
-s2n-quic = { path = "../../quic/s2n-quic" }
 s2n-quic-core = { path = "../../quic/s2n-quic-core", features = ["testing"] }
 s2n-quic-dc = { path = "../s2n-quic-dc", features = ["testing"] }
 tokio = { version = "1", features = ["full"] }
