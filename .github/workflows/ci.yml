@@ -415,7 +415,8 @@ jobs:
         run: |
           find . -name 'corpus.tar.gz' -exec dirname {} ';' | xargs -L 1 bash -c 'cd "$0" && rm -rf corpus && tar xf corpus.tar.gz'
 
-      # Force s2n-tls as the default TLS provider so the whole suite runs through s2n-tls.
+      # Exercise s2n-tls on Windows. s2n-quic-tests enables `provider-tls-s2n`, which overrides
+      # `provider-tls-default` and makes s2n-tls the default TLS provider on the GNU/MinGW target for tests.
       - name: Run cargo test
         shell: msys2 {0}
         run: |
@@ -423,8 +424,7 @@ jobs:
           cargo test --workspace \
             --exclude s2n-quic-dc \
             --exclude s2n-quic-dc-benches \
-            --exclude s2n-quic-dc-metrics \
-            --features s2n-tls-default
+            --exclude s2n-quic-dc-metrics
 
   asan:
     runs-on: ubuntu-latest
@@ -1119,7 +1119,7 @@ jobs:
   ci-status-report:
     runs-on: ubuntu-latest
     if: ${{ always() }}
-    needs: [env, rustfmt, clippy, udeps, doc, test, asan, fips, miri, no_std, compliance, coverage, crates, examples, recovery-simulations, sims, copyright, s2n-events, generate-events, snapshots, timing, typos, kani, dhat, loom, xdp, dc-wireshark]
+    needs: [env, rustfmt, clippy, udeps, doc, test, test-windows-gnu, asan, fips, miri, no_std, compliance, coverage, crates, examples, recovery-simulations, sims, copyright, s2n-events, generate-events, snapshots, timing, typos, kani, dhat, loom, xdp, dc-wireshark]
     steps:
       - uses: aws-actions/configure-aws-credentials@6.2.2
         if: github.event_name == 'push' || github.event_name == 'schedule' || github.repository == github.event.pull_request.head.repo.full_name

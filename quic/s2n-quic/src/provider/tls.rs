@@ -23,16 +23,20 @@ pub trait Provider {
 impl_provider_utils!();
 
 cfg_if! {
-    if #[cfg(feature = "provider-tls-default")] {
+    // An explicit provider selection overrides the platform default. `provider-tls-s2n` and
+    // `provider-tls-rustls` let a consumer force a specific TLS implementation just by enabling the
+    // feature, without having to disable default features. They are checked before
+    // `provider-tls-default` so the override still wins when the default feature is also enabled.
+    if #[cfg(feature = "provider-tls-s2n")] {
+        pub use s2n_tls as default;
+    } else if #[cfg(feature = "provider-tls-rustls")] {
+        pub use rustls as default;
+    } else if #[cfg(feature = "provider-tls-default")] {
         #[cfg_attr(docsrs, doc(cfg(feature = "provider-tls-default")))]
         pub mod default {
             //! Provides the recommended implementation of TLS using platform detection
             pub use super::default_tls::*;
         }
-    } else if #[cfg(feature = "provider-tls-s2n")] {
-        pub use s2n_tls as default;
-    } else if #[cfg(feature = "provider-tls-rustls")] {
-        pub use rustls as default;
     } else {
         pub mod default {
             //! Provides the recommended implementation of TLS using platform detection
@@ -192,6 +196,12 @@ impl Provider for &str {
 
 #[cfg(feature = "provider-tls-default")]
 mod default_tls {
+    // `provider-tls-default` pulls in `s2n-quic-tls-default`, but when an explicit
+    // `provider-tls-s2n`/`provider-tls-rustls` override wins the cfg_if above, this re-export is
+    // unused. We keep it (rather than gating it out) so the crate is still referenced, otherwise
+    // cargo-udeps flags `s2n-quic-tls-default` as an unused dependency under `--workspace` (where
+    // feature unification turns the override on).
+    #[allow(unused_imports)]
     pub use s2n_quic_tls_default::*;
 
     // We need to implement the provider trait for whatever the default is as long as it's
@@ -199,19 +209,9 @@ mod default_tls {
     //
     // Note: I know this looks like a mess. And it is. Hopefully in the future cargo will support
     // platform-specific default features.
-    //
-    // The default provider is s2n-tls on unix and whenever `provider-tls-default-s2n` forces it;
-    // otherwise it is rustls. We only add the impl below when the default type doesn't already
-    // have one from the explicit `rustls`/`s2n_tls` provider modules, to avoid conflicting impls.
     #[cfg(not(any(
-        all(
-            not(any(unix, feature = "provider-tls-default-s2n")),
-            feature = "s2n-quic-rustls"
-        ),
-        all(
-            any(unix, feature = "provider-tls-default-s2n"),
-            feature = "s2n-quic-tls"
-        )
+        all(not(unix), feature = "s2n-quic-rustls"),
+        all(unix, feature = "s2n-quic-tls")
     )))]
     mod default_provider {
         use super::*;
