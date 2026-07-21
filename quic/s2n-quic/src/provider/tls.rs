@@ -23,20 +23,16 @@ pub trait Provider {
 impl_provider_utils!();
 
 cfg_if! {
-    // An explicit provider selection overrides the platform default. `provider-tls-s2n` and
-    // `provider-tls-rustls` let a consumer force a specific TLS implementation just by enabling the
-    // feature, without having to disable default features. They are checked before
-    // `provider-tls-default` so the override still wins when the default feature is also enabled.
-    if #[cfg(feature = "provider-tls-s2n")] {
-        pub use s2n_tls as default;
-    } else if #[cfg(feature = "provider-tls-rustls")] {
-        pub use rustls as default;
-    } else if #[cfg(feature = "provider-tls-default")] {
+    if #[cfg(feature = "provider-tls-default")] {
         #[cfg_attr(docsrs, doc(cfg(feature = "provider-tls-default")))]
         pub mod default {
             //! Provides the recommended implementation of TLS using platform detection
             pub use super::default_tls::*;
         }
+    } else if #[cfg(feature = "provider-tls-s2n")] {
+        pub use s2n_tls as default;
+    } else if #[cfg(feature = "provider-tls-rustls")] {
+        pub use rustls as default;
     } else {
         pub mod default {
             //! Provides the recommended implementation of TLS using platform detection
@@ -196,12 +192,6 @@ impl Provider for &str {
 
 #[cfg(feature = "provider-tls-default")]
 mod default_tls {
-    // `provider-tls-default` pulls in `s2n-quic-tls-default`, but when an explicit
-    // `provider-tls-s2n`/`provider-tls-rustls` override wins the cfg_if above, this re-export is
-    // unused. We keep it (rather than gating it out) so the crate is still referenced, otherwise
-    // cargo-udeps flags `s2n-quic-tls-default` as an unused dependency under `--workspace` (where
-    // feature unification turns the override on).
-    #[allow(unused_imports)]
     pub use s2n_quic_tls_default::*;
 
     // We need to implement the provider trait for whatever the default is as long as it's

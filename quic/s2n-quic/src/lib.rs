@@ -50,21 +50,6 @@
 //!
 //! **NOTE**: this will override the platform detection and always use [`s2n-tls`][s2n-tls] by default.
 //!
-//! ### TLS provider precedence
-//!
-//! When more than one TLS provider feature is enabled, the implementation exposed as
-//! [`provider::tls::default`] is selected in this order:
-//!
-//! 1. `provider-tls-s2n` (always [`s2n-tls`][s2n-tls])
-//! 2. `provider-tls-rustls` (always [`rustls`][rustls])
-//! 3. `provider-tls-default` (platform detection)
-//!
-//! In other words, an explicit `provider-tls-s2n` or `provider-tls-rustls` selection overrides
-//! `provider-tls-default` even though it is enabled by default. This means you can force a specific
-//! implementation just by enabling its feature, without having to set `default-features = false`.
-//! For example, `features = ["provider-tls-s2n"]` uses s2n-tls as the default on every platform
-//! where it builds, including Windows with the GNU/MinGW toolchain.
-//!
 //! ### `provider-tls-fips`
 //!
 //! **FIPS mode with `provider-tls-s2n`**

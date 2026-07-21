@@ -17,7 +17,7 @@ futures = { version = "0.3", default-features = false, features = ["std"] }
 rand = { version = "0.10", features = ["chacha"] }
 s2n-codec = { path = "../../common/s2n-codec" }
 s2n-quic-core = { path = "../s2n-quic-core", features = ["branch-tracing", "event-tracing", "probe-tracing", "testing"] }
-s2n-quic = { path = "../s2n-quic", features = ["provider-event-tracing", "unstable-provider-io-testing", "unstable-provider-dc", "unstable-provider-packet-interceptor", "unstable-provider-random", "unstable-offload-tls"] }
+s2n-quic = { path = "../s2n-quic", default-features = false, features = ["provider-address-token-default", "provider-event-tracing", "unstable-provider-io-testing", "unstable-provider-dc", "unstable-provider-packet-interceptor", "unstable-provider-random", "unstable-offload-tls"] }
 s2n-quic-platform = { path = "../s2n-quic-platform", features = ["tokio-runtime"] }
 s2n-quic-transport = { path = "../s2n-quic-transport", features = ["unstable_resumption", "unstable-provider-dc"] }
 tokio = { version = "1", features = ["full"] }
@@ -37,4 +37,4 @@ quiche = "0.29"
 # whole suite exercises s2n-tls.
 [target.'cfg(any(unix, all(target_os = "windows", target_env = "gnu")))'.dependencies]
 s2n-tls = "0.3.40"
-s2n-quic = { path = "../s2n-quic", features = ["provider-event-tracing", "provider-tls-s2n", "unstable-provider-io-testing", "unstable-provider-dc", "unstable-provider-packet-interceptor", "unstable-provider-random", "unstable-offload-tls", "unstable_client_hello"] }
+s2n-quic = { path = "../s2n-quic", default-features = false, features = ["provider-address-token-default", "provider-event-tracing", "provider-tls-s2n", "unstable-provider-io-testing", "unstable-provider-dc", "unstable-provider-packet-interceptor", "unstable-provider-random", "unstable-offload-tls", "unstable_client_hello"] }
