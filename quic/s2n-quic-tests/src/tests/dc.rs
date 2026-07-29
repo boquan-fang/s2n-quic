@@ -715,6 +715,163 @@ fn dc_mtls_handshake_auth_failure_with_server_offloading_test() -> Result<()> {
     Ok(())
 }
 
+// Deterministically reproduces the bug and verifies the fix: the server reaches
+// `dc_state_changed=Complete` even when it never receives the client's ACK of the server's
+// `DC_STATELESS_RESET_TOKENS`.
+//
+// A packet interceptor on the server drops every client acknowledgement in the application
+// space, so the server can never complete via the normal token-ACK path. The client, once its
+// dc handshake completes, closes with `HANDSHAKE_COMPLETE_CLOSE_CODE`; that close (which carries
+// no ACK) is let through. The server must therefore rely solely on the close to finalize --
+// exactly the "server sees the close, but not the ACK" reordering the fix is designed to handle.
+#[test]
+fn dc_handshake_completes_when_token_ack_is_never_delivered() -> Result<()> {
+    let model = Model::default();
+    let rtt = Duration::from_millis(100);
+    model.set_delay(rtt / 2);
+
+    let server_subscriber = DcRecorder::new();
+    let server_events = server_subscriber.clone();
+    let client_subscriber = DcRecorder::new();
+    let client_events = client_subscriber.clone();
+
+    test(model.clone(), |handle| {
+        let mut server = Server::builder()
+            .with_tls(SERVER_CERTS)?
+            .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
+            .with_io(handle.builder().build()?)?
+            .with_event((
+                (
+                    (dc::ConfirmComplete, dc::MtuConfirmComplete),
+                    server_subscriber,
+                ),
+                tracing_events(false, model.clone()),
+            ))?
+            .with_random(Random::with_seed(456))?
+            // Drop the client's acknowledgements so the server never sees its tokens ACKed.
+            .with_packet_interceptor(DropClientApplicationAcks)?
+            .start()?;
+
+        let addr = server.local_addr()?;
+
+        spawn(async move {
+            if let Some(mut conn) = server.accept().await {
+                if dc::ConfirmComplete::wait_ready(&mut conn).await.is_ok() {
+                    dc::MtuConfirmComplete::wait_ready(&mut conn).await;
+                }
+            }
+        });
+
+        let client = Client::builder()
+            .with_tls(certificates::CERT_PEM)?
+            .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?
+            .with_io(handle.builder().build()?)?
+            .with_event((
+                (
+                    (dc::ConfirmComplete, dc::MtuConfirmComplete),
+                    client_subscriber,
+                ),
+                tracing_events(false, model.clone()),
+            ))?
+            .with_random(Random::with_seed(456))?
+            .start()?;
+
+        primary::spawn(async move {
+            let connect = Connect::new(addr).with_server_name("localhost");
+            let mut conn = client.connect(connect).await.unwrap();
+            // The client completes as soon as it receives the server's tokens and closes right
+            // away with the completion code -- reproducing "client closes before its ACK is
+            // delivered". (MTU probing is intentionally not awaited: its probes would be dropped
+            // by the interceptor, and it is not what this test exercises.)
+            if dc::ConfirmComplete::wait_ready(&mut conn).await.is_ok() {
+                conn.close(s2n_quic_core::dc::HANDSHAKE_COMPLETE_CLOSE_CODE.into());
+            }
+            // Keep the simulation alive long enough for the close to reach the server.
+            delay(Duration::from_secs(1)).await;
+        });
+
+        Ok(addr)
+    })
+    .unwrap();
+
+    let server_dc_state_changed_events = server_events
+        .dc_state_changed_events()
+        .lock()
+        .unwrap()
+        .clone();
+    let client_dc_state_changed_events = client_events
+        .dc_state_changed_events()
+        .lock()
+        .unwrap()
+        .clone();
+
+    assert_dc_complete(&client_dc_state_changed_events);
+    assert_dc_complete(&server_dc_state_changed_events);
+
+    Ok(())
+}
+
+// Drops the client's application-space acknowledgements (packets that carry an ACK but no
+// ack-eliciting content and no connection close). This lets the handshake progress -- the
+// client's `DC_STATELESS_RESET_TOKENS` and the `CONNECTION_CLOSE` are preserved -- while ensuring
+// the server never observes an acknowledgement of its own tokens.
+struct DropClientApplicationAcks;
+
+impl Interceptor for DropClientApplicationAcks {
+    fn intercept_rx_payload<'a>(
+        &mut self,
+        _subject: &Subject,
+        packet: &s2n_quic_core::packet::interceptor::Packet,
+        payload: DecoderBufferMut<'a>,
+    ) -> DecoderBufferMut<'a> {
+        // Only the application (1-RTT) space carries the token ACK; leave the handshake alone.
+        if !packet.number.space().is_application_data() {
+            return payload;
+        }
+
+        let bytes = payload.into_less_safe_slice();
+        if !carries_tokens_or_close(bytes) {
+            // Neutralize the packet by replacing its frames with a single PADDING frame (0x00).
+            // An empty payload would be a PROTOCOL_VIOLATION; padding is a valid, non-ack-eliciting
+            // no-op that carries no acknowledgement, so the server never learns its tokens were
+            // received.
+            bytes[0] = 0;
+            DecoderBufferMut::new(&mut bytes[..1])
+        } else {
+            DecoderBufferMut::new(bytes)
+        }
+    }
+}
+
+// Returns true if the packet carries the client's `DC_STATELESS_RESET_TOKENS` or a
+// `CONNECTION_CLOSE`. Every other application-space packet from the client only carries
+// acknowledgements, and because ACKs are cumulative, letting any of them through would tell the
+// server its tokens were received. Dropping them forces the server to rely on the close.
+fn carries_tokens_or_close(bytes: &[u8]) -> bool {
+    use s2n_quic_core::frame::{Frame, FrameMut};
+
+    let mut copy = bytes.to_vec();
+    let mut buffer = DecoderBufferMut::new(&mut copy);
+
+    while !buffer.is_empty() {
+        match buffer.decode::<FrameMut>() {
+            Ok((frame, remaining)) => {
+                if matches!(
+                    frame,
+                    Frame::DcStatelessResetTokens(_) | Frame::ConnectionClose(_)
+                ) {
+                    return true;
+                }
+                buffer = remaining;
+            }
+            // If we can't parse the payload, keep it (don't drop).
+            Err(_) => return true,
+        }
+    }
+
+    false
+}
+
 #[track_caller]
 fn self_test<S: ServerProviders, C: ClientProviders>(
     server: server::Builder<S>,

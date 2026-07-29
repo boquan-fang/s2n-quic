@@ -21,6 +21,7 @@ use s2n_quic_core::{
     stateless_reset, transmission,
     transmission::interest::Query,
     transport,
+    varint::VarInt,
 };
 
 /// Manages transmission and receipt of `DC_STATELESS_RESET_TOKENS` and
@@ -205,6 +206,31 @@ impl<Config: endpoint::Config> Manager<Config> {
     /// Called when a range of packets has been lost
     pub fn on_packet_loss<A: ack::Set>(&mut self, ack_set: &A) {
         self.stateless_reset_token_sync.on_packet_loss(ack_set);
+    }
+
+    /// Called when a `CONNECTION_CLOSE` frame is received from the peer
+    ///
+    /// On the server, a graceful application close carrying `dc::HANDSHAKE_COMPLETE_CLOSE_CODE`
+    /// confirms the client received the server's `DC_STATELESS_RESET_TOKENS` (the client only
+    /// sends that code after receiving them). This lets the server finalize the dc handshake even
+    /// if the client's ACK of those tokens was lost — which can happen under packet loss when the
+    /// client closes before its ACK is delivered. This is a no-op on the client, on connections
+    /// that never reached `ServerTokensSent`, and for any other close code or a transport-level
+    /// close.
+    pub fn on_peer_connection_close<Pub: event::ConnectionPublisher>(
+        &mut self,
+        error_code: VarInt,
+        is_application_error: bool,
+        publisher: &mut Pub,
+    ) {
+        ensure!(is_application_error && error_code == dc::HANDSHAKE_COMPLETE_CLOSE_CODE);
+        ensure!(self.state.on_stateless_reset_tokens_acked().is_ok());
+
+        debug_assert!(Config::ENDPOINT_TYPE.is_server());
+        self.path.on_dc_handshake_complete();
+        publisher.on_dc_state_changed(DcStateChanged {
+            state: DcState::Complete,
+        });
     }
 
     /// Called when the MTU of the path has changed

@@ -911,6 +911,15 @@ impl<Config: endpoint::Config> PacketSpace<Config> for ApplicationSpace<Config> 
             },
         );
 
+        // A connection close carrying the dc handshake-complete code lets the server finalize the
+        // dc handshake even if the client's ACK of the server's tokens was lost (an application
+        // close has no `frame_type`).
+        self.dc_manager.on_peer_connection_close(
+            frame.error_code,
+            frame.frame_type.is_none(),
+            publisher,
+        );
+
         Ok(())
     }
 

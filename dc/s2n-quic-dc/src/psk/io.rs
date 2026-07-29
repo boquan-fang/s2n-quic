@@ -568,6 +568,12 @@ impl HandshakeQueue {
                     map_clone.on_dc_connection_timeout(&peer);
                 }
 
+                // Signal successful dc completion to the server before closing. Reaching this
+                // point means ConfirmComplete already succeeded, so the dc handshake is complete.
+                // Closing with this code lets the server finalize its side even if the client's
+                // ACK of the server's DC_STATELESS_RESET_TOKENS was lost (which happens under
+                // packet loss when the client closes before the ACK is delivered).
+                connection.close(s2n_quic_core::dc::HANDSHAKE_COMPLETE_CLOSE_CODE.into());
                 drop(connection);
                 drop(permit_inflight);
 

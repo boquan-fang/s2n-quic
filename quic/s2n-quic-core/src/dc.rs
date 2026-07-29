@@ -35,6 +35,17 @@ pub type Version = u32;
 // dc versions supported by this code, in order of preference (SUPPORTED_VERSIONS[0] is most preferred)
 pub const SUPPORTED_VERSIONS: [Version; 1] = [0x0];
 
+/// The application close code the dc client uses when it closes the connection after completing
+/// the dc handshake.
+///
+/// The client only sends this code once it has received the server's `DC_STATELESS_RESET_TOKENS`,
+/// so a server that receives a connection close carrying this code while it is still waiting for
+/// its tokens to be acknowledged (state `ServerTokensSent`) can treat it as proof that the client
+/// received the tokens, and complete the handshake even if the token ACK itself was lost. Because
+/// the code is only ever sent on a successful completion, it is distinguishable from a timeout or
+/// error close, which is what makes relying on the close sound.
+pub const HANDSHAKE_COMPLETE_CLOSE_CODE: VarInt = VarInt::from_u32(0xdc);
+
 /// Called on the server to select the dc version to use (if any)
 ///
 /// The server's version preference takes precedence
