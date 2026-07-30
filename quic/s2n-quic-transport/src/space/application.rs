@@ -382,7 +382,12 @@ impl<Config: endpoint::Config> ApplicationSpace<Config> {
             config: PhantomData::<Config>,
             outcome: &mut outcome,
             packet_number,
-            payload: transmission::connection_close::Payload { connection_close },
+            payload: transmission::connection_close::PayloadWithAck {
+                // Only bundle the ACK onto the close for dc connections, so the closing
+                // behavior of every other connection is left unchanged.
+                ack_manager: self.dc_manager.is_enabled().then_some(&self.ack_manager),
+                connection_close,
+            },
             timestamp: context.timestamp,
             transmission_constraint: transmission::Constraint::None,
             transmission_mode: transmission::Mode::Normal,

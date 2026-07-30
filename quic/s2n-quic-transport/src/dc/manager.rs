@@ -112,6 +112,12 @@ impl<Config: endpoint::Config> Manager<Config> {
         self.version
     }
 
+    /// Returns `true` if this connection is using dc (a path was initialized),
+    /// and `false` for a disabled manager on a non-dc connection.
+    pub fn is_enabled(&self) -> bool {
+        self.path.is_some()
+    }
+
     pub fn on_token<Pub: event::ConnectionPublisher>(
         &mut self,
         context: Box<dyn Any + Send>,

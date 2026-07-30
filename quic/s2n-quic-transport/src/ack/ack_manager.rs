@@ -113,6 +113,35 @@ impl AckManager {
             .is_some()
     }
 
+    /// Writes an ACK frame unconditionally, bypassing the normal transmission gating.
+    ///
+    /// `on_transmit` only writes an ACK when the transmission state decides one is due
+    /// (`should_transmit`). That gating is deliberately conservative — once a normal ACK
+    /// has been sent for the current ranges it will not send another. When the connection
+    /// is closing we want to bundle the latest ACK into the `CONNECTION_CLOSE` packet even
+    /// though the gating would otherwise suppress it, so the peer's most recent
+    /// ack-eliciting packets (e.g. the `DC_STATELESS_RESET_TOKENS` carrier) are acknowledged
+    /// on a packet that is reliably retransmitted for the closing period.
+    ///
+    /// Unlike `on_transmit` this takes `&self` and performs no bookkeeping: the connection is
+    /// terminating, so there is no retransmission state left to track. Returns `true` if an
+    /// ACK frame was written.
+    pub fn write_ack_frame_forced<W: WriteContext>(&self, context: &mut W) -> bool {
+        if self.ack_ranges.is_empty() {
+            return false;
+        }
+
+        let ack_delay = self.ack_delay(context.current_time());
+
+        context
+            .write_ack_frame(&Ack {
+                ack_delay,
+                ack_ranges: &self.ack_ranges,
+                ecn_counts: self.ecn_counts.as_option(),
+            })
+            .is_some()
+    }
+
     /// Called after an outgoing packet is assembled and `on_transmit` returned `true`
     pub fn on_transmit_complete<W: WriteContext>(&mut self, context: &mut W) {
         debug_assert!(
