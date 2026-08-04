@@ -870,6 +870,19 @@ impl<Config: endpoint::Config> connection::Trait for ConnectionImpl<Config> {
 
         let mut publisher = self.event_context.publisher(timestamp, subscriber);
 
+        // Notify the dc manager that the connection is closing so it can report
+        // if the dc handshake did not reach the `Complete` state. Only a
+        // graceful (no-error) close is reported: an error close already signals
+        // a problem via `ConnectionClosed`, whereas this event isolates the
+        // silent case where the QUIC handshake completed and the connection
+        // closed cleanly but the dc handshake never finished. This must happen
+        // before `on_connection_closed`, since connection-level metric
+        // aggregation is flushed on that event.
+        if let Some((space, _)) = self.space_manager.application_mut() {
+            let graceful = matches!(error, connection::Error::Closed { .. });
+            space.dc_manager.on_close(graceful, &mut publisher);
+        }
+
         publisher.on_connection_closed(event::builder::ConnectionClosed { error });
 
         // We don't need any timers anymore

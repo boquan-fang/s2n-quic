@@ -517,6 +517,22 @@ struct DcPathCreated<'a> {
     path: &'a (dyn core::any::Any + Send + 'static),
 }
 
+#[event("transport:dc_state_incomplete")]
+/// The dc handshake did not reach the `Complete` state before the connection closed
+///
+/// Emitted when the connection closes while the dc handshake had been
+/// negotiated but had not yet reached `Complete`. The handshake was not
+/// abandoned by the endpoint; rather its state machine is stuck partway
+/// through (for example, a server stuck in `ServerTokensSent` because it never
+/// received the client's ACK). This surfaces the last state the handshake
+/// reached, allowing endpoints that closed without erroring but also without
+/// completing the dc handshake to be detected, which likely indicates a
+/// problem.
+struct DcStateIncomplete {
+    #[nominal_counter("state")]
+    state: DcHandshakeState,
+}
+
 // NOTE - This event MUST come last, since connection-level aggregation depends on it
 #[event("connectivity:connection_closed")]
 //= https://tools.ietf.org/id/draft-marx-qlog-event-definitions-quic-h3-02#5.1.3
