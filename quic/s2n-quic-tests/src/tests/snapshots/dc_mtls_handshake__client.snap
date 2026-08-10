@@ -69,7 +69,8 @@ input_file: quic/s2n-quic-tests/src/tests/dc.rs
 
  400.       > D len=60
  400.       >   P OneRtt(4) len=60
+ 400.       >     F OneRtt(4) ACK
  400.       >     F OneRtt(4) CONNECTION_CLOSE
- 400.       >     F OneRtt(4) PADDING(len=20)
+ 400.       >     F OneRtt(4) PADDING(len=10)
 
  400.       < D len=60

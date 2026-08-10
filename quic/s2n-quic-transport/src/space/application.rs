@@ -378,11 +378,22 @@ impl<Config: endpoint::Config> ApplicationSpace<Config> {
         let mut outcome = transmission::Outcome::default();
         let destination_connection_id = context.path().peer_connection_id;
 
+        // Bundle any pending ACK into the close packet, ordered before the CONNECTION_CLOSE frame.
+        //
+        // A plain ACK is not retransmitted, so once we start closing a dropped ACK is never
+        // regenerated. Under packet loss this can leave a dc peer waiting forever on the ACK of
+        // its DC_STATELESS_RESET_TOKENS (see the dc handshake completion bug). Riding the ACK
+        // along with the reliably-retransmitted CONNECTION_CLOSE packet ensures it survives loss.
+        let ack = self.ack_manager.pending_ack_frame(context.timestamp);
+
         let payload = transmission::Transmission {
             config: PhantomData::<Config>,
             outcome: &mut outcome,
             packet_number,
-            payload: transmission::connection_close::Payload { connection_close },
+            payload: transmission::connection_close::Payload {
+                connection_close,
+                ack,
+            },
             timestamp: context.timestamp,
             transmission_constraint: transmission::Constraint::None,
             transmission_mode: transmission::Mode::Normal,
