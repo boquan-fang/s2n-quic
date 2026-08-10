@@ -26,7 +26,7 @@ use s2n_quic_core::{
         Timestamp,
     },
     frame::ConnectionClose,
-    packet::interceptor::{Datagram, Interceptor},
+    packet::interceptor::{Datagram, Interceptor, Packet},
     stateless_reset::{
         self,
         token::testing::{TEST_TOKEN_1, TEST_TOKEN_2},
@@ -1433,4 +1433,209 @@ impl ExporterHandler for Exporter {
             server_params,
         ))
     }
+}
+
+// Reproduces the dcQUIC handshake-completion-under-loss bug and verifies the
+// "send ACK while closing" fix.
+//
+// The bug: the server reaches `Complete` only when it receives the client's ACK
+// of the server's DC_STATELESS_RESET_TOKENS. That ACK is a plain (non-ack-eliciting)
+// acknowledgement, so it is never retransmitted. If it is lost and the client then
+// closes the connection, the server stays stuck in `ServerTokensSent` and never
+// emits `dc_state_changed = Complete`.
+//
+// The fix bundles the pending ACK into the client's CONNECTION_CLOSE packet (ACK
+// ordered before the close frame). Because the close packet is reliably retransmitted
+// for the closing period, the token ACK inherits that reliability and the server
+// completes through its existing `on_packet_ack` path with no server-side change.
+//
+// This test mirrors how a real dc endpoint drives a connection (see `dc/s2n-quic-dc`'s
+// `psk/io.rs`): both peers wait for `ConfirmComplete` (dc handshake) *and*
+// `MtuConfirmComplete` (post-handshake MTU probing) before the client closes.
+//
+// A server-side interceptor neutralizes every standalone ACK the client sends in the
+// application space (any ACK-bearing packet not also carrying the client's tokens or a
+// CONNECTION_CLOSE). The server can therefore only learn that its tokens were
+// acknowledged from the ACK bundled onto the client's close. Without the fix the server
+// never reaches `Complete`.
+//
+// Only the *server's* MTU is pinned (base = initial = max), so the server does not probe
+// and emits `MTUProbingComplete` immediately. This is deliberate: a server MTU search
+// would depend on the client ACKing its probes, and the interceptor drops exactly those
+// ACKs, so the server would never finish probing, never send `MTUProbingComplete`, and
+// the client would block forever in `MtuConfirmComplete`. The client's MTU probing is
+// left active and realistic: the server's ACKs of the client's probes travel
+// server->client and are never intercepted, so the client completes its search normally
+// and only then closes. This keeps the real wait-for-both close sequence while targeting
+// the ACK loss at the token acknowledgement the fix is about.
+#[test]
+fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
+    let server = Server::builder()
+        .with_tls(SERVER_CERTS)?
+        .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
+        .with_packet_interceptor(DropClientStandaloneAcks)?;
+    let client = Client::builder()
+        .with_tls(certificates::CERT_PEM)?
+        .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
+
+    let model = Model::default();
+    let rtt = Duration::from_millis(100);
+    model.set_delay(rtt / 2);
+
+    // Pin only the server's MTU so it doesn't probe (see the note above); the client
+    // probes actively.
+    const SERVER_PINNED_MTU: u16 = 1500;
+
+    let server_subscriber = DcRecorder::new();
+    let server_events = server_subscriber.clone();
+    let client_subscriber = DcRecorder::new();
+    let client_events = client_subscriber.clone();
+
+    test(model.clone(), |handle| {
+        let server_event = (
+            (dc::ConfirmComplete, dc::MtuConfirmComplete),
+            (tracing_events(false, model.clone()), server_subscriber),
+        );
+
+        let mut server = server
+            .with_io(
+                handle
+                    .builder()
+                    .with_max_mtu(SERVER_PINNED_MTU)
+                    .with_base_mtu(SERVER_PINNED_MTU)
+                    .with_initial_mtu(SERVER_PINNED_MTU)
+                    .build()?,
+            )?
+            .with_event(server_event)?
+            .with_random(Random::with_seed(456))?
+            .start()?;
+
+        let addr = server.local_addr()?;
+
+        spawn(async move {
+            if let Some(mut conn) = server.accept().await {
+                // Mirror the real dc server: wait for the dc handshake, then MTU probing.
+                // Reaching `Complete` under this interception can only happen via the ACK
+                // bundled onto the client's close.
+                let result = dc::ConfirmComplete::wait_ready(&mut conn).await;
+                assert!(
+                    result.is_ok(),
+                    "server dc handshake did not complete: {result:?}"
+                );
+                dc::MtuConfirmComplete::wait_ready(&mut conn).await;
+            }
+        });
+
+        let client_event = (
+            (dc::ConfirmComplete, dc::MtuConfirmComplete),
+            (tracing_events(false, model.clone()), client_subscriber),
+        );
+
+        let client = client
+            // The client probes MTU actively; the server ACKs those probes (server->client,
+            // never intercepted), so the client's search completes normally before it closes.
+            .with_io(handle.builder().build().unwrap())?
+            .with_event(client_event)?
+            .with_random(Random::with_seed(456))?
+            .start()?;
+
+        primary::spawn(async move {
+            let connect = Connect::new(addr)
+                .with_server_name("localhost")
+                .with_deduplicate(true);
+            let mut conn = client.connect(connect).await.unwrap();
+            // Mirror the real dc client: wait for BOTH the dc handshake and MTU probing
+            // before closing. The client closes once its own MTU search completes and it
+            // has the server's tokens, which is exactly the timing that triggers the bug.
+            dc::ConfirmComplete::wait_ready(&mut conn).await.unwrap();
+            dc::MtuConfirmComplete::wait_ready(&mut conn).await;
+            // Closing here sends a CONNECTION_CLOSE carrying the pending token ACK.
+            drop(conn);
+            // Keep this (primary) task alive so the simulation continues running long
+            // enough for the close to reach the server and be processed.
+            delay(Duration::from_millis(300)).await;
+        });
+
+        Ok(addr)
+    })
+    .unwrap();
+
+    let server_dc_state_changed_events = server_events
+        .dc_state_changed_events()
+        .lock()
+        .unwrap()
+        .clone();
+    let client_dc_state_changed_events = client_events
+        .dc_state_changed_events()
+        .lock()
+        .unwrap()
+        .clone();
+
+    assert_dc_complete(&client_dc_state_changed_events);
+    assert_dc_complete(&server_dc_state_changed_events);
+
+    Ok(())
+}
+
+/// Server-side interceptor that neutralizes the client's standalone ACKs in the
+/// application space.
+///
+/// It rewrites any received 1-RTT packet that carries an ACK frame but is not also
+/// carrying the client's `DC_STATELESS_RESET_TOKENS` or a `CONNECTION_CLOSE` down to a
+/// single `PADDING` frame. This drops the plain token ACK the server is waiting on while
+/// letting the token exchange, MTU probes, and the eventual close (with its bundled ACK)
+/// through. A neutralized packet is rewritten to one `PADDING` byte rather than emptied,
+/// since a frame-less packet is a `PROTOCOL_VIOLATION`.
+struct DropClientStandaloneAcks;
+
+impl Interceptor for DropClientStandaloneAcks {
+    #[inline]
+    fn intercept_rx_payload<'a>(
+        &mut self,
+        _subject: &Subject,
+        packet: &Packet,
+        payload: DecoderBufferMut<'a>,
+    ) -> DecoderBufferMut<'a> {
+        // Only the application (1-RTT) space carries the dc token ACK.
+        if !packet.number.space().is_application_data() {
+            return payload;
+        }
+
+        let bytes = payload.into_less_safe_slice();
+
+        if !is_standalone_ack(bytes) {
+            return DecoderBufferMut::new(bytes);
+        }
+
+        // Neutralize to a single PADDING frame.
+        bytes[0] = 0;
+        DecoderBufferMut::new(&mut bytes[..1])
+    }
+}
+
+/// Returns true if the payload carries an ACK frame and does not carry the client's
+/// tokens or a CONNECTION_CLOSE (i.e. it is a standalone acknowledgement we want to drop).
+fn is_standalone_ack(bytes: &mut [u8]) -> bool {
+    use s2n_quic_core::frame::{Frame as CoreFrame, FrameMut};
+
+    let mut has_ack = false;
+    let mut buffer = DecoderBufferMut::new(bytes);
+    while !buffer.is_empty() {
+        match buffer.decode::<FrameMut>() {
+            Ok((frame, remaining)) => {
+                match frame {
+                    // Never drop the packets the server needs to make progress or complete.
+                    CoreFrame::DcStatelessResetTokens(_) | CoreFrame::ConnectionClose(_) => {
+                        return false
+                    }
+                    CoreFrame::Ack(_) => has_ack = true,
+                    _ => {}
+                }
+                buffer = remaining;
+            }
+            // If it does not parse cleanly, leave it untouched.
+            Err(_) => return false,
+        }
+    }
+    has_ack
 }
