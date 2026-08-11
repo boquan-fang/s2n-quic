@@ -1435,24 +1435,32 @@ impl ExporterHandler for Exporter {
     }
 }
 
-// dcQUIC endpoints to drop all ACKs to see if dc states will reach complete
-#[test]
-fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
-    let server = Server::builder()
-        .with_tls(SERVER_CERTS)?
-        .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
-        .with_packet_interceptor(DropClientStandaloneAcks)?;
-    let client = Client::builder()
-        .with_tls(certificates::CERT_PEM)?
-        .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
-
+/// Drives a dc handshake where the server's standalone token ACKs are neutralized by a
+/// packet interceptor, then has the client close and linger  so the server can only reach `Complete`
+/// via the token ACK that rides on the client's close.
+///
+/// The server MTU is pinned so it never probes (with its ACKs dropped it couldn't drive an
+/// MTU search anyway), while the client probes normally against the un-intercepted
+/// server->client path.
+///
+/// Returns the client and server `DcRecorder`s so the caller can assert on dc state.
+#[track_caller]
+fn dc_completes_through_close<S: ServerProviders, C: ClientProviders>(
+    server: server::Builder<S>,
+    client: client::Builder<C>,
+    client_closing: Arc<std::sync::atomic::AtomicBool>,
+    client_linger: Duration,
+    packet_snapshots: (PacketSnapshot, PacketSnapshot),
+) -> (DcRecorder, DcRecorder) {
     let model = Model::default();
     let rtt = Duration::from_millis(100);
     model.set_delay(rtt / 2);
 
-    // Ping Server's MTU to prevent it from probing. Since we are dropping all ACKs for the server,
-    // the server can't perform MTU probing.
+    // Pin the server's MTU to prevent it from probing. Since we are dropping all ACKs for the
+    // server, the server can't perform MTU probing.
     const SERVER_PINNED_MTU: u16 = 1500;
+
+    let (server_packet_snapshot, client_packet_snapshot) = packet_snapshots;
 
     let server_subscriber = DcRecorder::new();
     let server_events = server_subscriber.clone();
@@ -1462,7 +1470,10 @@ fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
     test(model.clone(), |handle| {
         let server_event = (
             (dc::ConfirmComplete, dc::MtuConfirmComplete),
-            (tracing_events(false, model.clone()), server_subscriber),
+            (
+                (tracing_events(false, model.clone()), server_packet_snapshot),
+                server_subscriber,
+            ),
         );
 
         let mut server = server
@@ -1496,7 +1507,14 @@ fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
 
         let client_event = (
             (dc::ConfirmComplete, dc::MtuConfirmComplete),
-            (tracing_events(false, model.clone()), client_subscriber),
+            (
+                (
+                    (tracing_events(false, model.clone()), client_packet_snapshot),
+                    client_subscriber,
+                ),
+                // Flips `client_closing` the moment the client begins closing.
+                ClientCloseWatcher(client_closing.clone()),
+            ),
         );
 
         let client = client
@@ -1520,27 +1538,60 @@ fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
             // Closing here sends a CONNECTION_CLOSE carrying the pending token ACK.
             drop(conn);
             // Keep this (primary) task alive so the simulation continues running long
-            // enough for the close to reach the server and be processed.
-            delay(Duration::from_millis(300)).await;
+            // enough for the close (or its retransmission) to reach the server.
+            delay(client_linger).await;
         });
 
         Ok(addr)
     })
     .unwrap();
 
-    let server_dc_state_changed_events = server_events
-        .dc_state_changed_events()
-        .lock()
-        .unwrap()
-        .clone();
-    let client_dc_state_changed_events = client_events
-        .dc_state_changed_events()
-        .lock()
-        .unwrap()
-        .clone();
+    (client_events, server_events)
+}
 
-    assert_dc_complete(&client_dc_state_changed_events);
-    assert_dc_complete(&server_dc_state_changed_events);
+// dcQUIC endpoints to drop all ACKs to see if dc states will reach complete
+#[test]
+fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
+    let server = Server::builder()
+        .with_tls(SERVER_CERTS)?
+        .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
+        .with_packet_interceptor(DropClientStandaloneAcks)?;
+    let client = Client::builder()
+        .with_tls(certificates::CERT_PEM)?
+        .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
+
+    // The server can only reach Complete via the token ACK bundled onto the client's single
+    // close, so a short linger is enough for that close to arrive. This test doesn't drop the
+    // close, so the close-watcher flag is unused.
+    let (client_events, server_events) = dc_completes_through_close(
+        server,
+        client,
+        Default::default(),
+        Duration::from_millis(300),
+        (
+            PacketSnapshot::named_snapshot(
+                "dc_handshake_completes_when_token_ack_rides_the_close__server",
+            ),
+            PacketSnapshot::named_snapshot(
+                "dc_handshake_completes_when_token_ack_rides_the_close__client",
+            ),
+        ),
+    );
+
+    assert_dc_complete(
+        &client_events
+            .dc_state_changed_events()
+            .lock()
+            .unwrap()
+            .clone(),
+    );
+    assert_dc_complete(
+        &server_events
+            .dc_state_changed_events()
+            .lock()
+            .unwrap()
+            .clone(),
+    );
 
     Ok(())
 }
@@ -1628,104 +1679,44 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
         .with_tls(certificates::CERT_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
-    let model = Model::default();
-    let rtt = Duration::from_millis(100);
-    model.set_delay(rtt / 2);
-
-    // Ping Server's MTU to prevent it from probing. Since we are dropping all ACKs for the server,
-    // the server can't perform MTU probing.
-    const SERVER_PINNED_MTU: u16 = 1500;
-
-    let server_subscriber = DcRecorder::new();
-    let server_events = server_subscriber.clone();
-    let client_subscriber = DcRecorder::new();
-    let client_events = client_subscriber.clone();
-
-    test(model.clone(), |handle| {
-        let server_event = (
-            (dc::ConfirmComplete, dc::MtuConfirmComplete),
-            (tracing_events(false, model.clone()), server_subscriber),
-        );
-
-        let mut server = server
-            .with_io(
-                handle
-                    .builder()
-                    .with_max_mtu(SERVER_PINNED_MTU)
-                    .with_base_mtu(SERVER_PINNED_MTU)
-                    .with_initial_mtu(SERVER_PINNED_MTU)
-                    .build()?,
-            )?
-            .with_event(server_event)?
-            .with_random(Random::with_seed(456))?
-            .start()?;
-
-        let addr = server.local_addr()?;
-
-        spawn(async move {
-            if let Some(mut conn) = server.accept().await {
-                let result = dc::ConfirmComplete::wait_ready(&mut conn).await;
-                assert!(
-                    result.is_ok(),
-                    "server dc handshake did not complete: {result:?}"
-                );
-                dc::MtuConfirmComplete::wait_ready(&mut conn).await;
-            }
-        });
-
-        let client_event = (
-            (dc::ConfirmComplete, dc::MtuConfirmComplete),
-            (
-                (tracing_events(false, model.clone()), client_subscriber),
-                // Flips `client_closing` the moment the client begins closing.
-                ClientCloseWatcher(client_closing.clone()),
+    // Same neutralization as `dc_handshake_completes_when_token_ack_rides_the_close`, but the
+    // interceptor also drops the very first close, so completion must come from a *retransmitted*
+    // close. Linger longer to allow the server PTO -> token retransmit -> close retransmit cycle.
+    let (client_events, server_events) = dc_completes_through_close(
+        server,
+        client,
+        client_closing,
+        Duration::from_secs(3),
+        (
+            PacketSnapshot::named_snapshot(
+                "dc_handshake_completes_when_first_close_is_dropped__server",
             ),
-        );
-
-        let client = client
-            .with_io(handle.builder().build().unwrap())?
-            .with_event(client_event)?
-            .with_random(Random::with_seed(456))?
-            .start()?;
-
-        primary::spawn(async move {
-            let connect = Connect::new(addr)
-                .with_server_name("localhost")
-                .with_deduplicate(true);
-            let mut conn = client.connect(connect).await.unwrap();
-            dc::ConfirmComplete::wait_ready(&mut conn).await.unwrap();
-            dc::MtuConfirmComplete::wait_ready(&mut conn).await;
-            // Closing sends the first CONNECTION_CLOSE (dropped by the interceptor); the
-            // CloseSender then re-sends it in response to the server's token retransmissions.
-            drop(conn);
-            // Linger long enough for the server PTO -> token retransmit -> close retransmit
-            // cycle to deliver a surviving close.
-            delay(Duration::from_secs(3)).await;
-        });
-
-        Ok(addr)
-    })
-    .unwrap();
+            PacketSnapshot::named_snapshot(
+                "dc_handshake_completes_when_first_close_is_dropped__client",
+            ),
+        ),
+    );
 
     // The first close must actually have been dropped, otherwise the test proves nothing.
     assert!(
-        close_dropped.load(std::sync::atomic::Ordering::Relaxed),
+        close_dropped.load(Ordering::Relaxed),
         "the first CONNECTION_CLOSE was never dropped, so retransmission wasn't exercised"
     );
 
-    let server_dc_state_changed_events = server_events
-        .dc_state_changed_events()
-        .lock()
-        .unwrap()
-        .clone();
-    let client_dc_state_changed_events = client_events
-        .dc_state_changed_events()
-        .lock()
-        .unwrap()
-        .clone();
-
-    assert_dc_complete(&client_dc_state_changed_events);
-    assert_dc_complete(&server_dc_state_changed_events);
+    assert_dc_complete(
+        &client_events
+            .dc_state_changed_events()
+            .lock()
+            .unwrap()
+            .clone(),
+    );
+    assert_dc_complete(
+        &server_events
+            .dc_state_changed_events()
+            .lock()
+            .unwrap()
+            .clone(),
+    );
 
     Ok(())
 }
