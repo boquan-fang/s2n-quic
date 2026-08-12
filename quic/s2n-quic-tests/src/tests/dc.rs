@@ -1674,6 +1674,7 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
         .with_packet_interceptor(DropAcksAndFirstClose {
             client_closing: client_closing.clone(),
             close_dropped: close_dropped.clone(),
+            seen_while_closing: Vec::new(),
         })?;
     let client = Client::builder()
         .with_tls(certificates::CERT_PEM)?
@@ -1697,10 +1698,11 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
         ),
     );
 
-    // The first close must actually have been dropped, otherwise the test proves nothing.
+    // A dropped close must actually have been redelivered via retransmission, otherwise the
+    // test proves nothing about the retransmit path.
     assert!(
         close_dropped.load(Ordering::Relaxed),
-        "the first CONNECTION_CLOSE was never dropped, so retransmission wasn't exercised"
+        "no close was dropped and redelivered, so retransmission wasn't exercised"
     );
 
     assert_dc_complete(
@@ -1745,12 +1747,30 @@ impl events::Subscriber for ClientCloseWatcher {
 }
 
 /// Server-side interceptor that (a) neutralizes the client's standalone token ACKs, exactly
-/// like [`DropClientStandaloneAcks`], and (b) drops the very first datagram that arrives after
-/// the client begins closing — i.e. the first CONNECTION_CLOSE — so the fix has to rely on a
-/// retransmitted close.
+/// like [`DropClientStandaloneAcks`], and (b) forces the client's `CONNECTION_CLOSE` to be
+/// delivered by a *retransmission* rather than its first transmission.
+///
+/// Precisely dropping "the close datagram" can't be done by inspecting bytes on the wire (it's
+/// encrypted at the datagram level) and close packets bypass the TX interceptor hooks, so we
+/// exploit an invariant instead: the `CloseSender` retransmits the *same bytes* (it reuses the
+/// packet number, per the RFC 9000 §10.2.1 exception), whereas every other packet uses a fresh
+/// packet number and is therefore byte-unique. So while the client is closing this interceptor
+/// drops the *first* occurrence of each distinct datagram — the pre-close straggler and the
+/// first `CONNECTION_CLOSE` — and lets a byte-identical *repeat* (a retransmitted close)
+/// through.
+///
+/// The drop happens at the datagram level, before the packet number is recorded, so the
+/// retransmission (same packet number) is processed normally instead of being discarded as a
+/// duplicate. Because only closes are ever retransmitted byte-for-byte, allowing a repeat
+/// through is proof that a dropped close was redelivered.
 struct DropAcksAndFirstClose {
     client_closing: Arc<std::sync::atomic::AtomicBool>,
+    /// Set once a byte-identical retransmission is allowed through, i.e. once a dropped close
+    /// has been redelivered. Proves the retransmission path was actually exercised.
     close_dropped: Arc<std::sync::atomic::AtomicBool>,
+    /// Distinct datagrams already seen while closing, used to tell a first transmission (which
+    /// is dropped) from a retransmission (which is allowed).
+    seen_while_closing: Vec<Vec<u8>>,
 }
 
 impl Interceptor for DropAcksAndFirstClose {
@@ -1762,14 +1782,30 @@ impl Interceptor for DropAcksAndFirstClose {
     ) -> DecoderBufferMut<'a> {
         use std::sync::atomic::Ordering::Relaxed;
 
-        // Drop the first datagram received while the client is closing (the first close).
-        // A true datagram-level drop means the packet number is never recorded, so the
-        // CloseSender's retransmission (which reuses the same packet number) is processed
-        // normally instead of being discarded as a duplicate.
-        if self.client_closing.load(Relaxed) && !self.close_dropped.swap(true, Relaxed) {
-            return DecoderBufferMut::new(&mut payload.into_less_safe_slice()[..0]);
+        // Before the client starts closing, everything is ordinary handshake/data traffic that
+        // must be delivered untouched.
+        if !self.client_closing.load(Relaxed) {
+            return payload;
         }
-        payload
+
+        let bytes = payload.into_less_safe_slice();
+
+        if self
+            .seen_while_closing
+            .iter()
+            .any(|seen| seen[..] == *bytes)
+        {
+            // A byte-identical repeat: this is a retransmitted close. Let it through and record
+            // that a dropped close was successfully redelivered.
+            self.close_dropped.store(true, Relaxed);
+            return DecoderBufferMut::new(bytes);
+        }
+
+        // First time we've seen this datagram while closing (a pre-close straggler or the first
+        // CONNECTION_CLOSE). Drop it at the datagram level so its packet number is never recorded
+        // and the retransmission is processed rather than discarded as a duplicate.
+        self.seen_while_closing.push(bytes.to_vec());
+        DecoderBufferMut::new(&mut bytes[..0])
     }
 
     #[inline]

@@ -52,8 +52,19 @@ input_file: quic/s2n-quic-tests/src/tests/dc.rs
  275.       >     F OneRtt(2) HANDSHAKE_DONE
  275.       >     F OneRtt(2) DC_STATELESS_RESET_TOKENS
 
- 375.       < D len=60
- 375.       <   P OneRtt(4) len=60
- 375.       <     F OneRtt(4) ACK
- 375.       | dc_state_changed=Complete
- 375.       <     F OneRtt(4) CONNECTION_CLOSE
+
+ 550.       > D len=70
+ 550.       >   P OneRtt(4) len=70
+ 550.       >     F OneRtt(4) ACK
+ 550.       >     F OneRtt(4) HANDSHAKE_DONE
+ 550.       >     F OneRtt(4) DC_STATELESS_RESET_TOKENS
+ 550.       > D len=70
+ 550.       >   P OneRtt(6) len=70
+ 550.       >     F OneRtt(6) ACK
+ 550.       >     F OneRtt(6) HANDSHAKE_DONE
+ 550.       >     F OneRtt(6) DC_STATELESS_RESET_TOKENS
+
+ 775.       < D len=60
+ 775.       <   P OneRtt(4) len=60
+ 775.       <     F OneRtt(4) ACK
+ 775.       <     F OneRtt(4) CONNECTION_CLOSE

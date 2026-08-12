@@ -68,3 +68,9 @@ input_file: quic/s2n-quic-tests/src/tests/dc.rs
  325.       >     F OneRtt(4) ACK
  325.       >     F OneRtt(4) CONNECTION_CLOSE
  325.       >     F OneRtt(4) PADDING(len=10)
+
+
+ 600.       < D len=70
+ 600.       < D len=70
+
+ 725.       > D len=60
