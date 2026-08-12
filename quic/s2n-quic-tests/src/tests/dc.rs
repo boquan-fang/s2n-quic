@@ -1143,7 +1143,7 @@ fn fmt_packet_header(h: &PacketHeader) -> String {
 
 fn fmt_frame(f: &Frame) -> String {
     match f {
-        Frame::Padding { len, .. } => format!("PADDING(len={})", len.next_multiple_of(LEN_FACTOR)),
+        Frame::Padding { .. } => "PADDING".into(),
         Frame::Ping { .. } => "PING".into(),
         Frame::Ack { .. } => "ACK".into(),
         Frame::Crypto { offset, len, .. } => format!(
@@ -1297,10 +1297,9 @@ impl events::Subscriber for PacketSnapshot {
         event: &events::PacketSent,
     ) {
         let line = format!(
-            "{} >   P {} len={}",
+            "{} >   P {}",
             fmt_time(meta.timestamp.duration_since_start()),
             fmt_packet_header(&event.packet_header),
-            event.packet_len.next_multiple_of(LEN_FACTOR.into()),
         );
         self.flush_packet(line);
     }
@@ -1312,10 +1311,9 @@ impl events::Subscriber for PacketSnapshot {
         event: &events::PacketReceived,
     ) {
         self.push(format!(
-            "{} <   P {} len={}",
+            "{} <   P {}",
             fmt_time(meta.timestamp.duration_since_start()),
             fmt_packet_header(&event.packet_header),
-            event.packet_len.next_multiple_of(LEN_FACTOR.into()),
         ));
     }
 
@@ -1560,9 +1558,11 @@ fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
         .with_tls(certificates::CERT_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
-    // The server can only reach Complete via the token ACK bundled onto the client's single
-    // close, so a short linger is enough for that close to arrive. This test doesn't drop the
-    // close, so the close-watcher flag is unused.
+    // Even though every standalone ACK is dropped, the server reaches Complete when it processes
+    // the client's clean CONNECTION_CLOSE: a no-error close means the client finished the dc
+    // handshake, which it only does after receiving the server's tokens. A short linger is enough
+    // for that single close to arrive. This test doesn't drop the close, so the close-watcher flag
+    // is unused.
     let (client_events, server_events) = dc_completes_through_close(
         server,
         client,
@@ -1681,8 +1681,9 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
     // Same neutralization as `dc_handshake_completes_when_token_ack_rides_the_close`, but the
-    // interceptor also drops the very first close, so completion must come from a *retransmitted*
-    // close. Linger longer to allow the server PTO -> token retransmit -> close retransmit cycle.
+    // interceptor also drops the very first close, so the server only reaches Complete once it
+    // processes a *retransmitted* clean close. Linger longer to allow the server PTO -> token
+    // retransmit -> close retransmit cycle.
     let (client_events, server_events) = dc_completes_through_close(
         server,
         client,
