@@ -368,25 +368,6 @@ impl AckManager {
             .unwrap_or_default();
         self.ack_settings.encode_ack_delay(ack_delay)
     }
-
-    /// Builds an ACK frame from the currently pending ACK ranges, if there are any.
-    ///
-    /// Unlike [`Self::on_transmit`], this does not consult the transmission state or record a
-    /// transmission; it simply reflects whatever packets are currently pending acknowledgement.
-    /// It is used to bundle the pending ACK into a `CONNECTION_CLOSE` packet while closing so
-    /// that an ACK the peer is waiting on (e.g. the dc stateless reset token ACK) survives packet
-    /// loss by riding along with the reliably-retransmitted close packet.
-    pub fn pending_ack_frame(&self, now: Timestamp) -> Option<Ack<&ack::Ranges>> {
-        if self.ack_ranges.is_empty() {
-            return None;
-        }
-
-        Some(Ack {
-            ack_delay: self.ack_delay(now),
-            ack_ranges: &self.ack_ranges,
-            ecn_counts: self.ecn_counts.as_option(),
-        })
-    }
 }
 
 impl timer::Provider for AckManager {

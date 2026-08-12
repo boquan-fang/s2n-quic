@@ -272,12 +272,7 @@ impl<Config: endpoint::Config> InitialSpace<Config> {
             config: PhantomData::<Config>,
             outcome: &mut outcome,
             packet_number,
-            payload: transmission::connection_close::Payload {
-                connection_close,
-                // The stateless-reset-token ACK the fix preserves lives in the application
-                // space, so initial close packets never bundle an ACK.
-                ack: None,
-            },
+            payload: transmission::connection_close::Payload { connection_close },
             timestamp: context.timestamp,
             transmission_constraint: transmission::Constraint::None,
             transmission_mode: transmission::Mode::Normal,
