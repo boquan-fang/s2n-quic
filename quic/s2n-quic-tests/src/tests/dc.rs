@@ -1143,7 +1143,7 @@ fn fmt_packet_header(h: &PacketHeader) -> String {
 
 fn fmt_frame(f: &Frame) -> String {
     match f {
-        Frame::Padding { .. } => "PADDING".into(),
+        Frame::Padding { len, .. } => format!("PADDING(len={})", len.next_multiple_of(LEN_FACTOR)),
         Frame::Ping { .. } => "PING".into(),
         Frame::Ack { .. } => "ACK".into(),
         Frame::Crypto { offset, len, .. } => format!(
@@ -1297,9 +1297,10 @@ impl events::Subscriber for PacketSnapshot {
         event: &events::PacketSent,
     ) {
         let line = format!(
-            "{} >   P {}",
+            "{} >   P {} len={}",
             fmt_time(meta.timestamp.duration_since_start()),
             fmt_packet_header(&event.packet_header),
+            event.packet_len.next_multiple_of(LEN_FACTOR.into()),
         );
         self.flush_packet(line);
     }
@@ -1311,9 +1312,10 @@ impl events::Subscriber for PacketSnapshot {
         event: &events::PacketReceived,
     ) {
         self.push(format!(
-            "{} <   P {}",
+            "{} <   P {} len={}",
             fmt_time(meta.timestamp.duration_since_start()),
             fmt_packet_header(&event.packet_header),
+            event.packet_len.next_multiple_of(LEN_FACTOR.into()),
         ));
     }
 
@@ -1550,12 +1552,15 @@ fn dc_completes_through_close<S: ServerProviders, C: ClientProviders>(
 // dcQUIC endpoints to drop all ACKs to see if dc states will reach complete
 #[test]
 fn dc_handshake_completes_when_token_ack_rides_the_close() -> Result<()> {
+    // Use an RSA certificate (fixed-length signatures) rather than the default ECDSA one.
+    // ECDSA signatures have a variable DER length, which makes the handshake packet lengths
+    // wobble run-to-run and destabilizes the packet snapshot; RSA keeps them deterministic.
     let server = Server::builder()
-        .with_tls(SERVER_CERTS)?
+        .with_tls((certificates::CERT_PKCS1_PEM, certificates::KEY_PKCS1_PEM))?
         .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
         .with_packet_interceptor(DropClientStandaloneAcks)?;
     let client = Client::builder()
-        .with_tls(certificates::CERT_PEM)?
+        .with_tls(certificates::CERT_PKCS1_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
     // Even though every standalone ACK is dropped, the server reaches Complete when it processes
@@ -1668,8 +1673,10 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
     let client_closing: Arc<AtomicBool> = Default::default();
     let close_dropped: Arc<AtomicBool> = Default::default();
 
+    // Use an RSA certificate (fixed-length signatures) so the handshake packet lengths are
+    // deterministic; the default ECDSA cert's variable-length signature destabilizes the snapshot.
     let server = Server::builder()
-        .with_tls(SERVER_CERTS)?
+        .with_tls((certificates::CERT_PKCS1_PEM, certificates::KEY_PKCS1_PEM))?
         .with_dc(MockDcEndpoint::new(&SERVER_TOKENS))?
         .with_packet_interceptor(DropAcksAndFirstClose {
             client_closing: client_closing.clone(),
@@ -1677,7 +1684,7 @@ fn dc_handshake_completes_when_first_close_is_dropped() -> Result<()> {
             seen_while_closing: Vec::new(),
         })?;
     let client = Client::builder()
-        .with_tls(certificates::CERT_PEM)?
+        .with_tls(certificates::CERT_PKCS1_PEM)?
         .with_dc(MockDcEndpoint::new(&CLIENT_TOKENS))?;
 
     // Same neutralization as `dc_handshake_completes_when_token_ack_rides_the_close`, but the
